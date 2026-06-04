@@ -1,0 +1,21 @@
+<nav class="navbar">
+    <div class="nav-left">
+        <a routerLink="/">Trang chủ</a>
+        <a routerLink="/courts">Sân</a>
+        <a routerLink="/news">Tin tức</a>
+    </div>
+
+    <div class="nav-right">
+        <!-- chưa login -->
+        <ng-container *ngIf="!user">
+            <a routerLink="/login">Đăng nhập</a>
+            <a routerLink="/register">Đăng ký</a>
+        </ng-container>
+
+        <!-- đã login -->
+        <ng-container *ngIf="user">
+            <span>Xin chào, {{ user.email }}</span>
+            <button (click)="logout()">Đăng xuất</button>
+        </ng-container>
+    </div>
+</nav>

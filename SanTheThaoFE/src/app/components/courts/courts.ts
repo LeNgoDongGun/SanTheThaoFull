@@ -1,55 +1,121 @@
 import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterLink } from '@angular/router';
+import { RouterLink, ActivatedRoute } from '@angular/router';
 import { CourtService } from '../../services/court';
+import { SporttypeService } from '../../services/sporttype';
 
 @Component({
   selector: 'app-courts',
   standalone: true,
   imports: [CommonModule, RouterLink],
   template: `
-    <div style="padding:24px">
-      <h2>Danh Sách Sân</h2>
-      <div style="display:flex;flex-wrap:wrap;gap:20px">
+    <div style="max-width:1200px;margin:auto;padding:32px 24px">
+
+      <!-- Tiêu đề -->
+      <h2 style="font-weight:700;margin-bottom:20px">
+        {{ selectedSport ? selectedSport.icon + ' ' + selectedSport.name : '🏟️ Tất cả sân' }}
+        <span style="font-size:0.9rem;color:#64748b;font-weight:400;margin-left:8px">{{ courts.length }} sân</span>
+      </h2>
+
+      <!-- Filter môn -->
+      <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:28px">
+        <a routerLink="/courts"
+           [style.background]="!selectedSportId ? '#3b82f6' : '#f1f5f9'"
+           [style.color]="!selectedSportId ? 'white' : '#475569'"
+           style="padding:8px 18px;border-radius:20px;text-decoration:none;font-size:0.875rem;font-weight:500">
+          Tất cả
+        </a>
+        <a *ngFor="let sport of sportTypes"
+           [routerLink]="['/courts']" [queryParams]="{sportTypeId: sport.id}"
+           [style.background]="selectedSportId === sport.id ? '#3b82f6' : '#f1f5f9'"
+           [style.color]="selectedSportId === sport.id ? 'white' : '#475569'"
+           style="padding:8px 18px;border-radius:20px;text-decoration:none;font-size:0.875rem;font-weight:500">
+          {{ sport.icon }} {{ sport.name }}
+        </a>
+      </div>
+
+      <!-- Danh sách sân -->
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:20px">
         <div *ngFor="let court of courts"
-             style="border:1px solid #ddd;border-radius:8px;padding:16px;width:280px">
-          <h3>{{ court.name }}</h3>
-          <p>{{ court.sportType?.name }}</p>
-          <p style="color:#1a73e8;font-weight:bold">
-            {{ court.pricePerHour | number }}đ/giờ
-          </p>
-          <p>{{ court.description }}</p>
-          <a [routerLink]="['/courts', court.id]"
-             style="background:#1a73e8;color:white;padding:8px 16px;border-radius:4px;text-decoration:none">
-            Xem chi tiết
-          </a>
+             style="background:white;border-radius:12px;overflow:hidden;box-shadow:0 1px 4px rgba(0,0,0,0.08);transition:box-shadow 0.2s"
+             onmouseover="this.style.boxShadow='0 4px 16px rgba(0,0,0,0.12)'"
+             onmouseout="this.style.boxShadow='0 1px 4px rgba(0,0,0,0.08)'">
+
+          <!-- Ảnh / icon -->
+          <div style="height:160px;overflow:hidden;background:linear-gradient(135deg,#e0e7ff,#c7d2fe);display:flex;align-items:center;justify-content:center">
+            <img *ngIf="court.imageUrl" [src]="court.imageUrl" [alt]="court.name"
+                 style="width:100%;height:100%;object-fit:cover"
+                 (error)="court.imageUrl=null">
+            <span *ngIf="!court.imageUrl" style="font-size:3.5rem">{{ court.sportType?.icon || '🏟️' }}</span>
+          </div>
+
+          <div style="padding:16px">
+            <p style="margin:0 0 4px;color:#64748b;font-size:0.8rem">{{ court.sportType?.name }}</p>
+            <h3 style="margin:0 0 6px;font-size:1rem;font-weight:700">{{ court.name }}</h3>
+            <p style="margin:0 0 14px;color:#3b82f6;font-weight:700;font-size:1rem">
+              {{ court.pricePerHour | number }}đ/giờ
+            </p>
+            <a [routerLink]="['/courts', court.id]"
+               style="background:#3b82f6;color:white;padding:8px 18px;border-radius:6px;text-decoration:none;font-size:0.85rem;font-weight:600;display:inline-block">
+              Xem chi tiết
+            </a>
+          </div>
         </div>
       </div>
-      <p *ngIf="courts.length === 0 && !loading">Không có sân nào.</p>
-      <p *ngIf="loading">Đang tải...</p>
+
+      <p *ngIf="courts.length === 0 && !loading" style="color:#64748b;text-align:center;padding:40px">
+        Không có sân nào.
+      </p>
+      <p *ngIf="loading" style="color:#64748b;text-align:center;padding:40px">Đang tải...</p>
     </div>
   `
 })
 export class CourtsComponent implements OnInit {
   courts: any[] = [];
+  allCourts: any[] = [];
+  sportTypes: any[] = [];
+  selectedSportId: number | null = null;
+  selectedSport: any = null;
   loading = true;
 
   constructor(
     private courtService: CourtService,
+    private sportTypeService: SporttypeService,
+    private route: ActivatedRoute,
     private cdr: ChangeDetectorRef
   ) { }
 
   ngOnInit() {
-    this.courtService.getAll().subscribe({
+    this.sportTypeService.getAll().subscribe({
       next: (res: any) => {
-        this.courts = Array.isArray(res) ? res : (res.data || []);
-        this.loading = false;
-        this.cdr.detectChanges();
-      },
-      error: () => {
-        this.loading = false;
-        this.cdr.detectChanges();
+        this.sportTypes = Array.isArray(res) ? res : (res.data || []);
       }
     });
+
+    this.courtService.getAll().subscribe({
+      next: (res: any) => {
+        this.allCourts = Array.isArray(res) ? res : (res.data || []);
+        this.loading = false;
+        this.applyFilter();
+        this.cdr.detectChanges();
+      },
+      error: () => { this.loading = false; }
+    });
+
+    this.route.queryParams.subscribe(params => {
+      this.selectedSportId = params['sportTypeId'] ? Number(params['sportTypeId']) : null;
+      this.applyFilter();
+    });
+  }
+
+  applyFilter() {
+    if (this.selectedSportId) {
+      this.courts = this.allCourts.filter(c => c.sportTypeId === this.selectedSportId);
+      this.selectedSport = this.sportTypes.find(s => s.id === this.selectedSportId) || null;
+    } else {
+      this.courts = this.allCourts;
+      this.selectedSport = null;
+    }
+    this.cdr.detectChanges();
   }
 }

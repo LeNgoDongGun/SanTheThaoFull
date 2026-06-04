@@ -1,47 +1,62 @@
-using Microsoft.AspNetCore.Mvc;
-using SanTheThaoAPI.Models;
-using System.Text.Json;
 using BCrypt.Net;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using SanTheThaoAPI.DTOs;
+using SanTheThaoAPI.Models;
 
 namespace SanTheThaoAPI.Controllers;
 
-[Route("api/[controller]")]
 [ApiController]
+[Route("api/[controller]")]
 public class AuthController : ControllerBase
 {
     private readonly SanTheThaoContext _context;
+    public AuthController(SanTheThaoContext context) => _context = context;
 
-    public AuthController(SanTheThaoContext context)
-    {
-        _context = context;
-    }
-
-    // LOGIN
     [HttpPost("login")]
-    public IActionResult Login([FromBody] JsonElement data)
+    public async Task<IActionResult> Login(LoginDto dto)
     {
-        var email = data.GetProperty("email").GetString();
-        var password = data.GetProperty("password").GetString();
+        var user = await _context.Users
+            .FirstOrDefaultAsync(u => u.Email == dto.Email && u.IsActive);
 
-        var user = _context.Users.FirstOrDefault(u => u.Email == email);
+        if (user == null || !BCrypt.Net.BCrypt.Verify(dto.Password, user.PasswordHash))
+            return Unauthorized(ApiResponse<string>.Fail("Email hoặc mật khẩu không đúng"));
 
-        if (user == null || !BCrypt.Net.BCrypt.Verify(password, user.PasswordHash))
-            return BadRequest("Sai tài khoản hoặc mật khẩu");
-
-        return Ok(user);
+        return Ok(ApiResponse<AuthResponseDto>.Ok(new AuthResponseDto
+        {
+            Id = user.Id,
+            FullName = user.FullName,
+            Email = user.Email,
+            Role = user.Role
+        }, "Đăng nhập thành công"));
     }
 
-    // REGISTER
     [HttpPost("register")]
-    public IActionResult Register(User user)
+    public async Task<IActionResult> Register(RegisterDto dto)
     {
-        user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(user.PasswordHash);
-        user.CreatedAt = DateTime.Now;
-        user.IsActive = true;
+        if (await _context.Users.AnyAsync(u => u.Email == dto.Email))
+            return BadRequest(ApiResponse<string>.Fail("Email đã tồn tại"));
+
+        var user = new User
+        {
+            FullName = dto.FullName,
+            Email = dto.Email,
+            PhoneNumber = dto.PhoneNumber,
+            PasswordHash = BCrypt.Net.BCrypt.HashPassword(dto.Password),
+            Role = "Customer",
+            IsActive = true,
+            CreatedAt = DateTime.Now
+        };
 
         _context.Users.Add(user);
-        _context.SaveChanges();
+        await _context.SaveChangesAsync();
 
-        return Ok(user);
+        return Ok(ApiResponse<AuthResponseDto>.Ok(new AuthResponseDto
+        {
+            Id = user.Id,
+            FullName = user.FullName,
+            Email = user.Email,
+            Role = user.Role
+        }, "Đăng ký thành công"));
     }
 }

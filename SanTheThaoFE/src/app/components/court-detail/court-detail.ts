@@ -1,55 +1,171 @@
 import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { CourtService } from '../../services/court';
+import { ReviewService } from '../../services/review';
+import { AuthService } from '../../services/auth';
 
 @Component({
   selector: 'app-court-detail',
   standalone: true,
-  imports: [CommonModule, RouterLink],
+  imports: [CommonModule, FormsModule, RouterLink],
   template: `
-    <div style="padding:24px;max-width:600px;margin:auto" *ngIf="court">
-      <h2>{{ court.name }}</h2>
-      <p><strong>Loại sân:</strong> {{ court.sportType?.name }}</p>
-      <p><strong>Mô tả:</strong> {{ court.description || 'Không có mô tả' }}</p>
-      <p><strong>Giá:</strong> {{ court.pricePerHour | number }}đ/giờ</p>
-      <p><strong>Trạng thái:</strong> {{ court.isActive ? '✅ Còn trống' : '❌ Đã đầy' }}</p>
-      <br>
-      <a [routerLink]="['/booking', court.id]"
-         style="background:#1a73e8;color:white;padding:10px 24px;border-radius:6px;text-decoration:none">
-        Đặt Sân Ngay
-      </a>
-      &nbsp;&nbsp;
-      <a routerLink="/courts" style="color:#1a73e8">← Quay lại</a>
+    <div style="max-width:1000px;margin:auto;padding:32px 24px" *ngIf="court">
+
+      <!-- Breadcrumb -->
+      <div style="font-size:0.85rem;color:#64748b;margin-bottom:20px">
+        <a routerLink="/" style="color:#3b82f6;text-decoration:none">Trang chủ</a> /
+        <a routerLink="/courts" style="color:#3b82f6;text-decoration:none">Đặt sân</a> /
+        <span>{{ court.name }}</span>
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 1.2fr;gap:28px">
+
+        <!-- Cột trái -->
+        <div>
+          <!-- Ảnh -->
+          <div style="height:240px;border-radius:12px;overflow:hidden;background:linear-gradient(135deg,#e0e7ff,#c7d2fe);display:flex;align-items:center;justify-content:center;margin-bottom:20px">
+            <img *ngIf="court.imageUrl" [src]="court.imageUrl" [alt]="court.name"
+                 style="width:100%;height:100%;object-fit:cover" (error)="court.imageUrl=null">
+            <span *ngIf="!court.imageUrl" style="font-size:5rem">{{ court.sportType?.icon || '🏟️' }}</span>
+          </div>
+
+          <!-- Thông tin -->
+          <div style="background:white;border-radius:12px;padding:20px;box-shadow:0 1px 4px rgba(0,0,0,0.08)">
+            <h2 style="margin:0 0 8px;font-weight:700">{{ court.name }}</h2>
+            <p style="color:#64748b;margin:0 0 16px">{{ court.sportType?.icon }} {{ court.sportType?.name }}</p>
+
+            <div style="display:flex;flex-direction:column;gap:10px;font-size:0.9rem">
+              <div>
+                <span style="color:#64748b">💰 Giá:</span>
+                <strong style="color:#3b82f6;margin-left:8px">{{ court.pricePerHour | number }}đ/giờ</strong>
+              </div>
+              <div>
+                <span style="color:#64748b">📌 Trạng thái:</span>
+                <span [style.color]="court.isActive ? '#22c55e' : '#ef4444'" style="margin-left:8px;font-weight:600">
+                  {{ court.isActive ? '✅ Còn trống' : '❌ Tạm đóng' }}
+                </span>
+              </div>
+              <div *ngIf="court.description">
+                <span style="color:#64748b">📝 Mô tả:</span>
+                <span style="margin-left:8px">{{ court.description }}</span>
+              </div>
+            </div>
+
+            <a *ngIf="court.isActive" [routerLink]="['/booking', court.id]"
+               style="display:block;text-align:center;background:#3b82f6;color:white;padding:12px;border-radius:8px;text-decoration:none;font-weight:700;margin-top:20px;font-size:1rem">
+              🗓️ Đặt sân ngay
+            </a>
+            <p *ngIf="!court.isActive"
+               style="text-align:center;color:#ef4444;margin-top:16px;font-weight:600">
+              Sân hiện tạm đóng
+            </p>
+          </div>
+        </div>
+
+        <!-- Cột phải: Đánh giá -->
+        <div>
+          <h3 style="font-weight:700;margin-bottom:16px">⭐ Đánh giá ({{ reviews.length }})</h3>
+
+          <!-- Form đánh giá -->
+          <div style="background:white;border-radius:12px;padding:20px;box-shadow:0 1px 4px rgba(0,0,0,0.08);margin-bottom:20px">
+            <h4 style="margin:0 0 14px;font-size:0.95rem;font-weight:600">Gửi đánh giá của bạn</h4>
+
+            <div style="display:flex;gap:8px;margin-bottom:12px">
+              <span *ngFor="let s of [1,2,3,4,5]"
+                    (click)="newReview.rating = s"
+                    style="font-size:1.6rem;cursor:pointer"
+                    [style.opacity]="s <= newReview.rating ? '1' : '0.3'">⭐</span>
+            </div>
+
+            <input [(ngModel)]="newReview.userName" placeholder="Tên của bạn"
+                   style="width:100%;padding:9px 12px;border:1px solid #e2e8f0;border-radius:6px;margin-bottom:10px;font-size:0.9rem;box-sizing:border-box">
+
+            <textarea [(ngModel)]="newReview.comment" placeholder="Nhận xét của bạn..." rows="3"
+                      style="width:100%;padding:9px 12px;border:1px solid #e2e8f0;border-radius:6px;font-size:0.9rem;resize:none;box-sizing:border-box"></textarea>
+
+            <button (click)="submitReview()"
+                    style="margin-top:10px;background:#3b82f6;color:white;border:none;padding:9px 20px;border-radius:6px;cursor:pointer;font-weight:600;font-size:0.9rem">
+              Gửi đánh giá
+            </button>
+            <p *ngIf="reviewMsg" style="margin-top:8px;color:#22c55e;font-size:0.85rem">{{ reviewMsg }}</p>
+          </div>
+
+          <!-- Danh sách đánh giá -->
+          <div style="display:flex;flex-direction:column;gap:12px;max-height:400px;overflow-y:auto">
+            <div *ngFor="let r of reviews"
+                 style="background:white;border-radius:10px;padding:16px;box-shadow:0 1px 4px rgba(0,0,0,0.06)">
+              <div style="display:flex;justify-content:space-between;margin-bottom:6px">
+                <strong style="font-size:0.9rem">{{ r.userName || 'Ẩn danh' }}</strong>
+                <span>{{ '⭐'.repeat(r.rating) }}</span>
+              </div>
+              <p style="margin:0;color:#475569;font-size:0.875rem">{{ r.comment }}</p>
+            </div>
+            <p *ngIf="reviews.length === 0"
+               style="color:#94a3b8;text-align:center;padding:20px">
+              Chưa có đánh giá nào.
+            </p>
+          </div>
+        </div>
+      </div>
     </div>
-    <div style="padding:24px" *ngIf="!court && !loading">
-      <p>Không tìm thấy sân.</p>
-      <a routerLink="/courts" style="color:#1a73e8">← Quay lại</a>
-    </div>
-    <p style="padding:24px" *ngIf="loading">Đang tải...</p>
+
+    <p *ngIf="!court && !loading" style="text-align:center;padding:40px;color:#64748b">
+      Không tìm thấy sân.
+    </p>
+    <p *ngIf="loading" style="text-align:center;padding:40px;color:#64748b">Đang tải...</p>
   `
 })
 export class CourtDetailComponent implements OnInit {
   court: any = null;
+  reviews: any[] = [];
   loading = true;
+  reviewMsg = '';
+  newReview = { courtId: 0, rating: 5, comment: '', userName: '' };
 
   constructor(
     private route: ActivatedRoute,
     private courtService: CourtService,
+    private reviewService: ReviewService,
+    public auth: AuthService,
     private cdr: ChangeDetectorRef
   ) { }
 
   ngOnInit() {
     const id = Number(this.route.snapshot.paramMap.get('id'));
+    this.newReview.courtId = id;
+
     this.courtService.getById(id).subscribe({
       next: (res: any) => {
         this.court = res.data ?? res;
         this.loading = false;
         this.cdr.detectChanges();
       },
-      error: () => {
-        this.loading = false;
+      error: () => { this.loading = false; }
+    });
+
+    this.loadReviews(id);
+  }
+
+  loadReviews(id: number) {
+    this.reviewService.getByCourtId(id).subscribe({
+      next: (res: any) => {
+        this.reviews = Array.isArray(res) ? res : (res.data || []);
         this.cdr.detectChanges();
+      }
+    });
+  }
+
+  submitReview() {
+    if (!this.newReview.comment.trim()) return;
+    this.reviewService.create(this.newReview).subscribe({
+      next: () => {
+        this.reviewMsg = '✅ Đánh giá đã được gửi!';
+        const id = this.newReview.courtId;
+        this.newReview = { courtId: id, rating: 5, comment: '', userName: '' };
+        this.loadReviews(id);
+        setTimeout(() => this.reviewMsg = '', 3000);
       }
     });
   }

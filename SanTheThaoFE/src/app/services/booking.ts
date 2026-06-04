@@ -20,4 +20,7 @@ export class BookingService {
   delete(id: number): Observable<any> {
     return this.http.delete(`${this.apiUrl}/${id}`);
   }
+  update(id: number, booking: any): Observable<any> {
+    return this.http.put(`${this.apiUrl}/${id}`, booking);
+  }
 }

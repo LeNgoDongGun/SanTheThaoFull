@@ -1,16 +1,39 @@
-import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
 
-@Injectable({
-  providedIn: 'root'
-})
+@Injectable({ providedIn: 'root' })
 export class AuthService {
-
-  apiUrl = 'http://localhost:5135/api/auth'; // sửa port đúng của bạn
+  private api = 'http://localhost:5135/api/auth';
 
   constructor(private http: HttpClient) { }
 
-  login(data: any) {
-    return this.http.post(`${this.apiUrl}/login`, data);
+  login(data: { email: string, password: string }) {
+    return this.http.post<any>(`${this.api}/login`, data);
+  }
+
+  register(data: any) {
+    return this.http.post<any>(`${this.api}/register`, data);
+  }
+
+  saveUser(user: any) {
+    localStorage.setItem('user', JSON.stringify(user));
+  }
+
+  getUser(): any {
+    const u = localStorage.getItem('user');
+    return u ? JSON.parse(u) : null;
+  }
+
+  logout() {
+    localStorage.removeItem('user');
+  }
+
+  isLoggedIn() {
+    return !!this.getUser();
+  }
+
+  isAdmin() {
+    const role = this.getUser()?.role;
+    return role === 'Admin' || role === 'admin';
   }
 }

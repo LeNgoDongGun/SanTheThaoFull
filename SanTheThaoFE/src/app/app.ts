@@ -1,8 +1,8 @@
 import { Component } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 import { NavbarComponent } from './components/navbar/navbar';
-import { HttpClientModule } from '@angular/common/http';
 import { FormsModule } from '@angular/forms';
+import { FooterComponent } from './components/footer/footer';
 
 @Component({
   selector: 'app-root',
@@ -10,11 +10,13 @@ import { FormsModule } from '@angular/forms';
   imports: [
     RouterOutlet,
     NavbarComponent,
-    FormsModule
+    FormsModule,
+    FooterComponent
   ],
   template: `
     <app-navbar></app-navbar>
     <router-outlet></router-outlet>
+    <app-footer></app-footer>
   `
 })
 export class App { }

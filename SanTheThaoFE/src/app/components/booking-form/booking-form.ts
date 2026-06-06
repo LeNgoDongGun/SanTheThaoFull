@@ -149,14 +149,16 @@ export class BookingFormComponent implements OnInit {
     }
     this.loading = true;
     this.errorMsg = '';
+
+
     this.bookingService.create(this.booking).subscribe({
       next: () => {
         this.loading = false;
         this.router.navigate(['/my-bookings']);
       },
-      error: () => {
+      error: (err: any) => {
         this.loading = false;
-        this.errorMsg = 'Đặt sân thất bại, vui lòng thử lại.';
+        this.errorMsg = err?.error?.message || 'Đặt sân thất bại, vui lòng thử lại.';
       }
     });
   }

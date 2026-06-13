@@ -15,6 +15,11 @@ export class AuthService {
     return this.http.post<any>(`${this.api}/register`, data);
   }
 
+  // Chuyển thành kiểu void vì dùng window.location.href sẽ làm reload/chuyển toàn bộ trang
+  loginSocial(provider: 'google' | 'facebook' | 'github'): void {
+    window.location.href = `${this.api}/${provider}`;
+  }
+
   saveUser(user: any) {
     localStorage.setItem('user', JSON.stringify(user));
   }

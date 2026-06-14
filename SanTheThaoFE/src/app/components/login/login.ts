@@ -24,24 +24,36 @@ export class LoginComponent implements OnInit { // Implement OnInit
   ) { }
 
   ngOnInit() {
-    // Hứng dữ liệu từ .NET Redirect trả về qua Query Parameters
-    this.route.queryParams.subscribe(params => {
-      if (params['socialLogin'] === 'true') {
-        this.loading = true;
-        
-        // Tạo object user từ các tham số nhận trên URL
-        const userObj = {
-          id: params['id'] ? +params['id'] : null,
-          email: params['email'],
-          fullName: params['fullName'] ? decodeURIComponent(params['fullName']) : '',
-          role: params['role']
-        };
+    // --- XỬ LÝ ĐĂNG NHẬP MXH TRẢ VỀ QUA QUERY PARAMS ---
+      // Hứng dữ liệu từ .NET Redirect trả về qua Query Parameters
+      this.route.queryParams.subscribe(params => {
+        if (params['socialLogin'] === 'true') {
+          this.loading = true;
+          
+          // Tạo object user từ các tham số nhận trên URL
+          const userObj = {
+            id: params['id'] ? +params['id'] : null,
+            email: params['email'],
+            fullName: params['fullName'] ? decodeURIComponent(params['fullName']) : '',
+            role: params['role']
+          };
 
-        // Lưu thông tin đăng nhập và đá về trang chủ
-        this.handleSuccess(userObj);
-      }
-    });
-  }
+          // 1. Lưu thông tin đăng nhập vào localStorage
+          this.auth.saveUser(userObj);
+
+          // 2. TỐI ƯU UX: Xóa sạch query params trên thanh URL để giữ bảo mật và sạch sẽ
+          this.router.navigate([], {
+            relativeTo: this.route,
+            queryParams: { socialLogin: null, id: null, email: null, fullName: null, role: null },
+            queryParamsHandling: 'merge' // Gộp đè giá trị null để xóa chúng đi
+          }).then(() => {
+            // 3. Sau khi URL đã sạch, tiến hành đá về trang chủ
+            this.loading = false;
+            this.router.navigate(['/']);
+          });
+        }
+      });
+    }
 
   submit() {
     if (!this.email || !this.password) {

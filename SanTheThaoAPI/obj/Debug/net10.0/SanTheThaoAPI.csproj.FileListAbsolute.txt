@@ -283,3 +283,5 @@ D:\angular_cuoiky\SanTheThaoAPI\obj\Debug\net10.0\SanTheThaoAPI.pdb
 D:\angular_cuoiky\SanTheThaoAPI\obj\Debug\net10.0\SanTheThaoAPI.genruntimeconfig.cache
 D:\angular_cuoiky\SanTheThaoAPI\obj\Debug\net10.0\ref\SanTheThaoAPI.dll
 D:\angular_cuoiky\SanTheThaoAPI\bin\Debug\net10.0\Microsoft.AspNetCore.Authentication.Google.dll
+D:\angular_cuoiky\SanTheThaoAPI\bin\Debug\net10.0\AspNet.Security.OAuth.GitHub.dll
+D:\angular_cuoiky\SanTheThaoAPI\bin\Debug\net10.0\Microsoft.AspNetCore.Authentication.Facebook.dll

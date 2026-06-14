@@ -5,6 +5,11 @@ using SanTheThaoAPI.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
+
+
+// THÊM DÒNG NÀY VÀO ĐÂY ĐỂ ĐĂNG KÝ IHttpClientFactory
+builder.Services.AddHttpClient();
+
 // 1. Cấu hình Controller và JSON Options
 builder.Services.AddControllers()
     .AddJsonOptions(x => x.JsonSerializerOptions.ReferenceHandler =
@@ -34,11 +39,25 @@ builder.Services.AddAuthentication(options =>
 .AddGoogle(options =>
 {
     // Đọc thông tin Credentials từ file appsettings.json
-    options.ClientId = builder.Configuration["Authentication:Google:ClientId"] ?? "YOUR_GOOGLE_CLIENT_ID";
-    options.ClientSecret = builder.Configuration["Authentication:Google:ClientSecret"] ?? "YOUR_GOOGLE_CLIENT_SECRET";
+    options.ClientId = builder.Configuration["Authentication:Google:ClientId"] ?? "";
+    options.ClientSecret = builder.Configuration["Authentication:Google:ClientSecret"] ?? "";
     
     // Endpoint mặc định xử lý callback từ phía Google Auth Server
     options.CallbackPath = "/signin-google";
+})
+.AddFacebook(options =>
+{
+    options.AppId = builder.Configuration["Authentication:Facebook:AppId"] ?? "";
+    options.AppSecret = builder.Configuration["Authentication:Facebook:AppSecret"] ?? "";
+    options.CallbackPath = "/signin-facebook";
+})
+.AddGitHub(options =>
+{
+    options.ClientId = builder.Configuration["Authentication:GitHub:ClientId"] ?? "";
+    options.ClientSecret = builder.Configuration["Authentication:GitHub:ClientSecret"] ?? "";
+    options.CallbackPath = "/signin-github";
+    // GitHub yêu cầu quyền truy cập email cá nhân
+    options.Scope.Add("user:email"); 
 });
 
 builder.Services.AddEndpointsApiExplorer();

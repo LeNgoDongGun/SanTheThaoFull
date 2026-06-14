@@ -23,10 +23,11 @@ builder.Services.AddDbContext<SanTheThaoContext>(options =>
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowAngular", policy =>
-        policy.WithOrigins("http://localhost:4200")
+        policy.WithOrigins("http://localhost:4200") // Cho phép Angular gọi sang
               .AllowAnyHeader()
               .AllowAnyMethod()
-              .AllowCredentials()); // THÊM MỚI: Cho phép truyền cookie/credentials qua lại nếu cần
+              .SetIsOriginAllowed(origin => true) // THÊM MỚI: Cho phép nhận request động từ mọi nguồn (rất tốt khi MoMo Sandbox bắn IPN về endpoint backend của mày)
+              .AllowCredentials()); 
 });
 
 // 4. CẤU HÌNH AUTHENTICATION CHO GOOGLE (THÊM MỚI TẠI ĐÂY)

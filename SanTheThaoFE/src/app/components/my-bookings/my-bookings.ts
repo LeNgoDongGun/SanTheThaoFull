@@ -11,60 +11,35 @@ import { AuthService } from '../../services/auth';
   template: `
     <div style="max-width:900px;margin:auto;padding:32px 24px">
       <h2 style="font-weight:700;margin-bottom:24px">📋 Lịch sử đặt sân</h2>
-
-      <!-- Chưa đăng nhập -->
-      <div *ngIf="!auth.isLoggedIn()"
-           style="text-align:center;padding:60px;color:#64748b">
+      <div *ngIf="!auth.isLoggedIn()" style="text-align:center;padding:60px;color:#64748b">
         <div style="font-size:3rem;margin-bottom:12px">🔒</div>
         <p>Vui lòng <a routerLink="/login" style="color:#3b82f6;font-weight:600">đăng nhập</a> để xem lịch sử.</p>
       </div>
-
-      <!-- Đang tải -->
       <p *ngIf="loading" style="text-align:center;color:#64748b;padding:40px">Đang tải...</p>
-
-      <!-- Không có đơn -->
-      <div *ngIf="!loading && auth.isLoggedIn() && bookings.length === 0"
-           style="text-align:center;padding:60px;color:#64748b">
+      
+      <div *ngIf="!loading && auth.isLoggedIn() && bookings.length === 0" style="text-align:center;padding:60px;color:#64748b">
         <div style="font-size:3rem;margin-bottom:12px">📋</div>
         <p>Bạn chưa có đơn đặt sân nào.</p>
-        <a routerLink="/courts"
-           style="background:#3b82f6;color:white;padding:10px 24px;border-radius:8px;text-decoration:none;font-weight:600">
-          Đặt sân ngay
-        </a>
+        <a routerLink="/courts" style="background:#3b82f6;color:white;padding:10px 24px;border-radius:8px;text-decoration:none;font-weight:600">Đặt sân ngay</a>
       </div>
 
-      <!-- Danh sách đơn -->
-      <div *ngIf="!loading && bookings.length > 0"
-           style="display:flex;flex-direction:column;gap:16px">
-        <div *ngFor="let b of bookings"
-             style="background:white;border-radius:12px;padding:20px;box-shadow:0 1px 4px rgba(0,0,0,0.08);display:grid;grid-template-columns:1fr auto;gap:16px;align-items:center">
-
+      <div *ngIf="!loading && bookings.length > 0" style="display:flex;flex-direction:column;gap:16px">
+        <div *ngFor="let b of bookings" style="background:white;border-radius:12px;padding:20px;box-shadow:0 1px 4px rgba(0,0,0,0.08);display:grid;grid-template-columns:1fr auto;gap:16px;align-items:center">
           <div>
-            <h3 style="margin:0 0 8px;font-size:1rem;font-weight:700">
-              {{ b.court?.name || 'Sân #' + b.courtId }}
-            </h3>
+            <h3 style="margin:0 0 8px;font-size:1rem;font-weight:700">{{ b.court?.name || 'Sân #' + b.courtId }}</h3>
             <div style="display:flex;flex-wrap:wrap;gap:16px;font-size:0.875rem;color:#64748b">
               <span>📅 {{ b.bookingDate }}</span>
               <span>🕐 {{ b.startTime }} – {{ b.endTime }}</span>
               <span>💰 {{ b.totalPrice | number }}đ</span>
             </div>
-            <p *ngIf="b.note" style="margin:8px 0 0;font-size:0.85rem;color:#94a3b8">
-              📝 {{ b.note }}
-            </p>
+            <p *ngIf="b.note" style="margin:8px 0 0;font-size:0.85rem;color:#94a3b8">📝 {{ b.note }}</p>
           </div>
-
-          <!-- Trạng thái -->
           <div style="text-align:center">
-            <span [style.background]="statusColor(b.status).bg"
-                  [style.color]="statusColor(b.status).text"
-                  style="padding:6px 14px;border-radius:20px;font-size:0.8rem;font-weight:600;white-space:nowrap">
+            <span [style.background]="statusColor(b.status).bg" [style.color]="statusColor(b.status).text" style="padding:6px 14px;border-radius:20px;font-size:0.8rem;font-weight:600;white-space:nowrap">
               {{ statusLabel(b.status) }}
             </span>
             <br>
-            <button *ngIf="b.status === 0" (click)="cancel(b.id)"
-                    style="margin-top:8px;background:transparent;border:1px solid #ef4444;color:#ef4444;padding:5px 12px;border-radius:6px;cursor:pointer;font-size:0.8rem">
-              Hủy đơn
-            </button>
+            <button *ngIf="b.status === 0" (click)="cancel(b.id)" style="margin-top:8px;background:transparent;border:1px solid #ef4444;color:#ef4444;padding:5px 12px;border-radius:6px;cursor:pointer;font-size:0.8rem">Hủy đơn</button>
           </div>
         </div>
       </div>
@@ -83,11 +58,16 @@ export class MyBookingsComponent implements OnInit {
 
   ngOnInit() {
     if (!this.auth.isLoggedIn()) { this.loading = false; return; }
+    
     this.bookingService.getAll().subscribe({
       next: (res: any) => {
+        // Đọc mảng thô hoặc bọc dữ liệu an toàn
         const all = Array.isArray(res) ? res : (res.data || []);
-        const userId = this.auth.getUser()?.id;
-        this.bookings = all.filter((b: any) => b.userId === userId);
+        
+        // SỬA CHÍ MẠNG: Ép cả 2 ID về kiểu Số (Number) trước khi filter tránh lỗi vỡ mảng
+        const currentUserId = Number(this.auth.getUser()?.id);
+        this.bookings = all.filter((b: any) => Number(b.userId) === currentUserId);
+        
         this.loading = false;
         this.cdr.detectChanges();
       },

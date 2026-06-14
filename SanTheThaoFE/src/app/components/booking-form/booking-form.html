@@ -1,1 +1,74 @@
-<p>booking-form works!</p>
+<div class="booking-container">
+
+  <div class="breadcrumb">
+    <a routerLink="/courts">← Quay lại danh sách sân</a>
+  </div>
+
+  <h2>🗓️ Đặt sân</h2>
+
+  <div *ngIf="court" class="court-card">
+    <div class="court-icon">
+      {{ court.sportType?.icon || '🏟️' }}
+    </div>
+    <div class="court-info">
+      <h3>{{ court.name }}</h3>
+      <p class="sport-type">{{ court.sportType?.name }}</p>
+      <p class="price">{{ court.pricePerHour | number }}đ/giờ</p>
+    </div>
+  </div>
+
+  <div *ngIf="!auth.isLoggedIn()" class="alert-warn">
+    ⚠️ Bạn cần <a routerLink="/login">đăng nhập</a> để tiến hành đặt sân.
+  </div>
+
+  <div class="booking-card">
+
+    <div class="form-group">
+      <label>📅 Ngày đặt</label>
+      <input type="date" [(ngModel)]="bookingData.bookingDate" [min]="today">
+    </div>
+
+    <div class="form-grid">
+      <div class="form-group">
+        <label>🕐 Giờ bắt đầu</label>
+        <input type="time" [(ngModel)]="bookingData.startTime" (change)="calcPrice()">
+      </div>
+      <div class="form-group">
+        <label>🕐 Giờ kết thúc</label>
+        <input type="time" [(ngModel)]="bookingData.endTime" (change)="calcPrice()">
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label>📝 Ghi chú (tùy chọn)</label>
+      <textarea [(ngModel)]="bookingData.note" rows="3" placeholder="Ghi chú thêm (ví dụ: thuê thêm vợt, bóng...)"></textarea>
+    </div>
+
+    <div class="form-group">
+      <label class="section-label">💳 Phương thức thanh toán</label>
+      <div class="payment-methods">
+        <label class="payment-option">
+          <input type="radio" name="paymentMethod" value="Cash" [(ngModel)]="bookingData.paymentMethod">
+          <span class="option-text">💵 Thanh toán tiền mặt tại quầy</span>
+        </label>
+        <label class="payment-option">
+          <input type="radio" name="paymentMethod" value="Momo" [(ngModel)]="bookingData.paymentMethod">
+          <span class="option-text">🔮 Thanh toán online qua Ví MoMo</span>
+        </label>
+      </div>
+    </div>
+
+    <div *ngIf="bookingData.totalPrice > 0" class="total-price-box">
+      <span class="label">💰 Tổng tiền tạm tính:</span>
+      <span class="amount">{{ bookingData.totalPrice | number }}đ</span>
+    </div>
+
+    <button (click)="submit()" [disabled]="!auth.isLoggedIn() || loading" class="btn-submit">
+      {{ loading ? 'Đang xử lý hóa đơn...' : '✅ Xác nhận đặt sân' }}
+    </button>
+
+    <p *ngIf="errorMsg" class="error-text">
+      {{ errorMsg }}
+    </p>
+  </div>
+</div>

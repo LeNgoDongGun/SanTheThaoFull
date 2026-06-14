@@ -1,21 +1,29 @@
 <nav class="navbar">
-    <div class="nav-left">
-        <a routerLink="/">Trang chủ</a>
-        <a routerLink="/courts">Sân</a>
-        <a routerLink="/news">Tin tức</a>
-    </div>
+  <div class="nav-left">
+    <a routerLink="/" class="logo">
+      🏟️ Sân <span style="color:#3b82f6">Thể Thao</span>
+    </a>
 
-    <div class="nav-right">
-        <!-- chưa login -->
-        <ng-container *ngIf="!user">
-            <a routerLink="/login">Đăng nhập</a>
-            <a routerLink="/register">Đăng ký</a>
-        </ng-container>
+    <a routerLink="/" routerLinkActive="active-link" [routerLinkActiveOptions]="{exact:true}">Trang chủ</a>
+    <a routerLink="/courts" routerLinkActive="active-link">Đặt sân</a>
+    <a routerLink="/news" routerLinkActive="active-link">Tin tức</a>
+    <a *ngIf="auth.isLoggedIn()" routerLink="/my-bookings" routerLinkActive="active-link">Lịch sử</a>
+    <a *ngIf="auth.isAdmin()" routerLink="/admin" style="color:#f59e0b" routerLinkActive="active-link">⚙️ Admin</a>
+  </div>
 
-        <!-- đã login -->
-        <ng-container *ngIf="user">
-            <span>Xin chào, {{ user.email }}</span>
-            <button (click)="logout()">Đăng xuất</button>
-        </ng-container>
-    </div>
+  <div class="nav-right">
+    <ng-container *ngIf="!auth.isLoggedIn()">
+      <a routerLink="/login">Đăng nhập</a>
+      <a routerLink="/register" class="btn-register">
+        Đăng ký
+      </a>
+    </ng-container>
+
+    <ng-container *ngIf="auth.isLoggedIn()">
+      <span>👤 {{ auth.getUser()?.fullName }}</span>
+      <button (click)="logout()">
+        Đăng xuất
+      </button>
+    </ng-container>
+  </div>
 </nav>

@@ -1,1 +1,56 @@
-<p>footer works!</p>
+<footer class="footer-container">
+  <div class="footer-content">
+    <div class="footer-grid">
+
+      <div class="footer-brand">
+        <div class="footer-logo">
+          🏟️ Sân <span style="color:#3b82f6">Thể Thao</span>
+        </div>
+        <p class="footer-desc">
+          Hệ thống đặt sân thể thao trực tuyến — nhanh chóng, tiện lợi và uy tín.
+        </p>
+        <div class="social-links">
+          <a href="#" class="social-icon">f</a>
+          <a href="#" class="social-icon">in</a>
+          <a href="#" class="social-icon">yt</a>
+        </div>
+      </div>
+
+      <div class="footer-links-col">
+        <h4>ĐẶT SÂN</h4>
+        <div class="links-group">
+          <a routerLink="/courts" [queryParams]="{sportTypeId:1}">🌐 Bóng đá</a>
+          <a routerLink="/courts" [queryParams]="{sportTypeId:2}">🏸 Cầu lông</a>
+          <a routerLink="/courts" [queryParams]="{sportTypeId:3}">🏐 Bóng chuyền</a>
+          <a routerLink="/courts" [queryParams]="{sportTypeId:4}">🏀 Bóng rổ</a>
+          <a routerLink="/courts" [queryParams]="{sportTypeId:5}">🏓 Pickleball</a>
+        </div>
+      </div>
+
+      <div class="footer-links-col">
+        <h4>HỖ TRỢ</h4>
+        <div class="links-group">
+          <a routerLink="/news">Tin tức</a>
+          <a routerLink="/register">Đăng ký</a>
+          <a routerLink="/login">Đăng nhập</a>
+        </div>
+      </div>
+
+      <div class="footer-links-col">
+        <h4>LIÊN HỆ</h4>
+        <div class="contact-info">
+          <span>📍 Kbang, Gia Lai</span>
+          <span>📞 0901 234 567</span>
+          <span>✉️ contact&#64;santhethao.com</span>
+          <span>🕐 Mở cửa 06:00 – 22:00 hàng ngày</span>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="footer-bottom">
+      <span>© 2026 Sân Thể Thao. All rights reserved.</span>
+      <span>Made with ❤️ in Việt Nam</span>
+    </div>
+  </div>
+</footer>

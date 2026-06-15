@@ -1,79 +1,104 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core'; // Thêm OnInit
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Router, RouterLink } from '@angular/router';
+import { Router, RouterLink, ActivatedRoute } from '@angular/router'; // Thêm ActivatedRoute
 import { AuthService } from '../../services/auth';
 
 @Component({
   selector: 'app-login',
   standalone: true,
   imports: [CommonModule, FormsModule, RouterLink],
-  template: `
-    <div style="min-height:80vh;display:flex;align-items:center;justify-content:center;background:#f8fafc;padding:24px">
-      <div style="background:white;border-radius:16px;padding:36px;width:100%;max-width:420px;box-shadow:0 4px 20px rgba(0,0,0,0.08)">
-
-        <div style="text-align:center;margin-bottom:28px">
-          <div style="font-size:3rem">🏟️</div>
-          <h2 style="margin:8px 0 4px;font-weight:700">Đăng nhập</h2>
-          <p style="color:#64748b;font-size:0.875rem">Hệ thống đặt sân thể thao</p>
-        </div>
-
-        <div *ngIf="errorMsg"
-             style="background:#fef2f2;border:1px solid #fecaca;border-radius:8px;padding:12px;margin-bottom:16px;color:#dc2626;font-size:0.875rem">
-          {{ errorMsg }}
-        </div>
-
-        <div style="margin-bottom:16px">
-          <label style="display:block;font-size:0.875rem;font-weight:600;color:#374151;margin-bottom:6px">Email</label>
-          <input type="email" [(ngModel)]="email" placeholder="email@example.com"
-                 style="width:100%;padding:10px 12px;border:1px solid #e2e8f0;border-radius:8px;font-size:0.9rem;box-sizing:border-box">
-        </div>
-
-        <div style="margin-bottom:24px">
-          <label style="display:block;font-size:0.875rem;font-weight:600;color:#374151;margin-bottom:6px">Mật khẩu</label>
-          <input type="password" [(ngModel)]="password" placeholder="••••••••"
-                 (keyup.enter)="submit()"
-                 style="width:100%;padding:10px 12px;border:1px solid #e2e8f0;border-radius:8px;font-size:0.9rem;box-sizing:border-box">
-        </div>
-
-        <button (click)="submit()" [disabled]="loading"
-                style="width:100%;background:#3b82f6;color:white;border:none;padding:12px;border-radius:8px;font-size:1rem;font-weight:700;cursor:pointer">
-          {{ loading ? 'Đang xử lý...' : 'Đăng nhập' }}
-        </button>
-
-        <p style="text-align:center;margin-top:20px;font-size:0.875rem;color:#64748b">
-          Chưa có tài khoản?
-          <a routerLink="/register" style="color:#3b82f6;font-weight:600;text-decoration:none">Đăng ký ngay</a>
-        </p>
-      </div>
-    </div>
-  `
+  templateUrl: './login.html',
+  styleUrls: ['./login.css']
 })
-export class LoginComponent {
+export class LoginComponent implements OnInit { // Implement OnInit
   email = '';
   password = '';
   loading = false;
   errorMsg = '';
 
-  constructor(private auth: AuthService, private router: Router) { }
+  constructor(
+    private auth: AuthService, 
+    private router: Router,
+    private route: ActivatedRoute // Inject ActivatedRoute vào đây
+  ) { }
+
+  ngOnInit() {
+    // --- XỬ LÝ ĐĂNG NHẬP MXH TRẢ VỀ QUA QUERY PARAMS ---
+      // Hứng dữ liệu từ .NET Redirect trả về qua Query Parameters
+      this.route.queryParams.subscribe(params => {
+        if (params['socialLogin'] === 'true') {
+          this.loading = true;
+          
+          // Tạo object user từ các tham số nhận trên URL
+          const userObj = {
+            id: params['id'] ? +params['id'] : null,
+            email: params['email'],
+            fullName: params['fullName'] ? decodeURIComponent(params['fullName']) : '',
+            role: params['role']
+          };
+
+          // 1. Lưu thông tin đăng nhập vào localStorage
+          this.auth.saveUser(userObj);
+
+          // 2. TỐI ƯU UX: Xóa sạch query params trên thanh URL để giữ bảo mật và sạch sẽ
+          this.router.navigate([], {
+            relativeTo: this.route,
+            queryParams: { socialLogin: null, id: null, email: null, fullName: null, role: null },
+            queryParamsHandling: 'merge' // Gộp đè giá trị null để xóa chúng đi
+          }).then(() => {
+            // 3. Sau khi URL đã sạch, tiến hành đá về trang chủ
+            this.loading = false;
+            this.router.navigate(['/']);
+          });
+        }
+      });
+    }
 
   submit() {
     if (!this.email || !this.password) {
       this.errorMsg = 'Vui lòng nhập đầy đủ email và mật khẩu.';
       return;
     }
+    
     this.loading = true;
     this.errorMsg = '';
+    
     this.auth.login({ email: this.email, password: this.password }).subscribe({
-      next: (res: any) => {
-        this.auth.saveUser(res.data ?? res);
-        this.loading = false;
-        this.router.navigate(['/']);
-      },
-      error: () => {
-        this.loading = false;
-        this.errorMsg = 'Email hoặc mật khẩu không đúng.';
-      }
+      next: (res: any) => this.handleSuccess(res),
+      error: () => this.handleError('Email hoặc mật khẩu không đúng.')
     });
+  }
+
+  // --- CÁC HÀM XỬ LÝ ĐĂNG NHẬP MXH ĐÃ ĐƯỢC TỐI ƯU ---
+
+  loginWithGoogle() {
+    this.loading = true;
+    this.errorMsg = '';
+    this.auth.loginSocial('google'); // Gọi trực tiếp, không .subscribe()
+  }
+
+  loginWithFacebook() {
+    this.loading = true;
+    this.errorMsg = '';
+    this.auth.loginSocial('facebook'); // Gọi trực tiếp, không .subscribe()
+  }
+
+  loginWithGithub() {
+    this.loading = true;
+    this.errorMsg = '';
+    this.auth.loginSocial('github'); // Gọi trực tiếp, không .subscribe()
+  }
+
+  // Hàm helper để tái sử dụng code xử lý kết quả
+  private handleSuccess(res: any) {
+    this.auth.saveUser(res.data ?? res);
+    this.loading = false;
+    this.router.navigate(['/']);
+  }
+
+  private handleError(msg: string) {
+    this.loading = false;
+    this.errorMsg = msg;
   }
 }

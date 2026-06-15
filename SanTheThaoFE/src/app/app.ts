@@ -3,6 +3,7 @@ import { RouterOutlet } from '@angular/router';
 import { NavbarComponent } from './components/navbar/navbar';
 import { FormsModule } from '@angular/forms';
 import { FooterComponent } from './components/footer/footer';
+import { ChatbotComponent } from './components/chatbot/chatbot';
 
 @Component({
   selector: 'app-root',
@@ -11,12 +12,14 @@ import { FooterComponent } from './components/footer/footer';
     RouterOutlet,
     NavbarComponent,
     FormsModule,
-    FooterComponent
+    FooterComponent,
+    ChatbotComponent
   ],
   template: `
     <app-navbar></app-navbar>
+    <app-chatbot></app-chatbot>
     <router-outlet></router-outlet>
     <app-footer></app-footer>
-  `
+  `,
 })
 export class App { }

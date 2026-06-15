@@ -15,6 +15,8 @@ export class AuthService {
     return this.http.post<any>(`${this.api}/register`, data);
   }
 
+
+
   saveUser(user: any) {
     localStorage.setItem('user', JSON.stringify(user));
   }
@@ -35,5 +37,10 @@ export class AuthService {
   isAdmin() {
     const role = this.getUser()?.role;
     return role === 'Admin' || role === 'admin';
+  }
+
+    // Chuyển thành kiểu void vì dùng window.location.href sẽ làm reload/chuyển toàn bộ trang
+  loginSocial(provider: 'google' | 'facebook' | 'github'): void {
+    window.location.href = `${this.api}/${provider}`;
   }
 }

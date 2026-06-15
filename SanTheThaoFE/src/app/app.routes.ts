@@ -3,6 +3,7 @@ import { HomeComponent } from './components/home/home';
 import { CourtsComponent } from './components/courts/courts';
 import { CourtDetailComponent } from './components/court-detail/court-detail';
 import { BookingFormComponent } from './components/booking-form/booking-form';
+import { BookingResultComponent } from './booking-result/booking-result';
 import { LoginComponent } from './components/login/login';
 import { RegisterComponent } from './components/register/register';
 import { MyBookingsComponent } from './components/my-bookings/my-bookings';
@@ -15,6 +16,8 @@ export const routes: Routes = [
     { path: 'courts', component: CourtsComponent },
     { path: 'courts/:id', component: CourtDetailComponent },
     { path: 'booking/:courtId', component: BookingFormComponent },
+    // SỬA THÀNH COMPONENT THUẦN VÀ THÊM DẤU PHẨY ĐẦY ĐỦ Ở CUỐI DÒNG
+    { path: 'booking-result', component: BookingResultComponent },
     { path: 'login', component: LoginComponent },
     { path: 'register', component: RegisterComponent },
     { path: 'my-bookings', component: MyBookingsComponent },

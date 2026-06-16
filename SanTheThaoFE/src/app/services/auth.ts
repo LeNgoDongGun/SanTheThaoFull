@@ -40,7 +40,7 @@ export class AuthService {
   }
 
     // Chuyển thành kiểu void vì dùng window.location.href sẽ làm reload/chuyển toàn bộ trang
-  loginSocial(provider: 'google' | 'facebook' | 'github'): void {
-    window.location.href = `${this.api}/${provider}`;
+  loginSocial(provider: 'Google' | 'Facebook' | 'GitHub'): void {
+    window.location.href = `${this.api}/login/${provider}`;
   }
 }

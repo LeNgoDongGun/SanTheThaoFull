@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("SanTheThaoAPI")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+6e2a9aadb5667bb5dcd7f42004251a891f89a375")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+1e995234666f0a6fbece7d7305524db7fe861ee5")]
 [assembly: System.Reflection.AssemblyProductAttribute("SanTheThaoAPI")]
 [assembly: System.Reflection.AssemblyTitleAttribute("SanTheThaoAPI")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

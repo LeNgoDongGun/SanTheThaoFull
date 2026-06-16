@@ -1,62 +1,75 @@
-using BCrypt.Net;
+using System.Security.Claims;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using SanTheThaoAPI.DTOs;
 using SanTheThaoAPI.Models;
+// Khai báo sử dụng thư viện BCrypt
+using BC = BCrypt.Net.BCrypt; 
 
 namespace SanTheThaoAPI.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-public class AuthController : ControllerBase
+public class AuthController(SanTheThaoContext context) : ControllerBase
 {
-    private readonly SanTheThaoContext _context;
-    public AuthController(SanTheThaoContext context) => _context = context;
+    // Không cần dùng PasswordHasher<User> nữa, BCrypt sử dụng các hàm static trực tiếp.
 
     [HttpPost("login")]
     public async Task<IActionResult> Login(LoginDto dto)
     {
-        var user = await _context.Users
-            .FirstOrDefaultAsync(u => u.Email == dto.Email && u.IsActive);
-
-        if (user == null || !BCrypt.Net.BCrypt.Verify(dto.Password, user.PasswordHash))
+        var u = await context.Users.FirstOrDefaultAsync(x => x.Email == dto.Email && x.IsActive);
+        
+        // Thay thế bằng BC.Verify để kiểm tra mật khẩu
+        if (u == null || string.IsNullOrEmpty(u.PasswordHash) || !BC.Verify(dto.Password, u.PasswordHash))
             return Unauthorized(ApiResponse<string>.Fail("Email hoặc mật khẩu không đúng"));
 
-        return Ok(ApiResponse<AuthResponseDto>.Ok(new AuthResponseDto
-        {
-            Id = user.Id,
-            FullName = user.FullName,
-            Email = user.Email,
-            Role = user.Role
-        }, "Đăng nhập thành công"));
+        return Ok(ApiResponse<AuthResponseDto>.Ok(new(u), "Đăng nhập thành công"));
     }
 
     [HttpPost("register")]
     public async Task<IActionResult> Register(RegisterDto dto)
     {
-        if (await _context.Users.AnyAsync(u => u.Email == dto.Email))
+        if (await context.Users.AnyAsync(x => x.Email == dto.Email)) 
             return BadRequest(ApiResponse<string>.Fail("Email đã tồn tại"));
 
-        var user = new User
-        {
-            FullName = dto.FullName,
-            Email = dto.Email,
-            PhoneNumber = dto.PhoneNumber,
-            PasswordHash = BCrypt.Net.BCrypt.HashPassword(dto.Password),
-            Role = "Customer",
-            IsActive = true,
-            CreatedAt = DateTime.Now
-        };
+        var u = new User { FullName = dto.FullName ?? "", Email = dto.Email ?? "", PhoneNumber = dto.PhoneNumber ?? "", IsActive = true, CreatedAt = DateTime.Now };
+        
+        // Thay thế bằng BC.HashPassword để băm mật khẩu
+        u.PasswordHash = BC.HashPassword(dto.Password ?? Guid.NewGuid().ToString());
 
-        _context.Users.Add(user);
-        await _context.SaveChangesAsync();
+        context.Users.Add(u);
+        await context.SaveChangesAsync();
+        return Ok(ApiResponse<AuthResponseDto>.Ok(new(u), "Đăng ký thành công"));
+    }
 
-        return Ok(ApiResponse<AuthResponseDto>.Ok(new AuthResponseDto
+    [HttpGet("login/{provider}")]
+    public IActionResult LoginSocial(string provider) 
+        => Challenge(new AuthenticationProperties { RedirectUri = Url.Action("SocialCallback") }, provider);
+
+    [HttpGet("callback")]
+    public async Task<IActionResult> SocialCallback()
+    {
+        var res = await HttpContext.AuthenticateAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+        if (!res.Succeeded || res.Principal == null) return BadRequest("Đăng nhập MXH thất bại.");
+
+        var socialUser = new User(res.Principal.Claims);
+        if (string.IsNullOrEmpty(socialUser.Email)) return BadRequest("Không lấy được Email.");
+
+        var u = await context.Users.FirstOrDefaultAsync(x => x.Email == socialUser.Email);
+        if (u == null)
         {
-            Id = user.Id,
-            FullName = user.FullName,
-            Email = user.Email,
-            Role = user.Role
-        }, "Đăng ký thành công"));
+            u = socialUser;
+            // Thay thế bằng BC.HashPassword cho tài khoản social mới tạo ngẫu nhiên
+            u.PasswordHash = BC.HashPassword(Guid.NewGuid().ToString());
+            context.Users.Add(u);
+            await context.SaveChangesAsync();
+        }
+        else if (!u.IsActive) return Unauthorized("Tài khoản bị khóa.");
+
+        await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+        
+        return Redirect($"http://localhost:4200/login?socialLogin=true&id={u.Id}&email={u.Email}&fullName={Uri.EscapeDataString(u.FullName)}&role={u.Role}");
     }
 }

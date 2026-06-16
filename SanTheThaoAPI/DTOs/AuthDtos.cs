@@ -1,3 +1,5 @@
+using SanTheThaoAPI.Models; // Thêm dòng này để nhận diện class User từ thư mục Models
+
 namespace SanTheThaoAPI.DTOs;
 
 public class LoginDto
@@ -20,6 +22,19 @@ public class AuthResponseDto
     public string FullName { get; set; } = "";
     public string Email { get; set; } = "";
     public string Role { get; set; } = "";
+
+    // --- BẮT BUỘC THÊM CỤM NÀY ĐỂ FIX TRIỆT ĐỂ LỖI CS1729 ---
+    public AuthResponseDto() { }
+    
+    // Hàm khởi tạo nhận vào model User để tự động bốc tách dữ liệu gọn gàng
+    public AuthResponseDto(User u)
+    {
+        Id = u.Id;
+        FullName = u.FullName ?? "";
+        Email = u.Email ?? "";
+        Role = u.Role ?? "Customer";
+    }
+    // --------------------------------------------------------
 }
 
 public class ApiResponse<T>

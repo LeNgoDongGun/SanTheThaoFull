@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink, ActivatedRoute } from '@angular/router';
@@ -14,19 +14,18 @@ import { AuthService } from '../../services/auth';
 export class LoginComponent implements OnInit {
   email = ''; 
   password = ''; 
-  loading = false; 
   errorMsg = '';
 
   constructor(
     private auth: AuthService, 
     private router: Router, 
-    private route: ActivatedRoute
+    private route: ActivatedRoute,
+    private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit() {
     this.route.queryParams.subscribe(p => {
       if (p['socialLogin'] !== 'true') return;
-      this.loading = true;
 
       this.auth.saveUser({
         id: p['id'] ? +p['id'] : null,
@@ -38,12 +37,11 @@ export class LoginComponent implements OnInit {
       this.router.navigate(['/'], {
         queryParams: { socialLogin: null, id: null, email: null, fullName: null, role: null },
         queryParamsHandling: 'merge'
-      }).then(() => this.loading = false);
+      });
     });
   }
 
   submit() {
-    this.loading = true; 
     this.errorMsg = '';
     
     this.auth.login({ email: this.email.trim(), password: this.password }).subscribe({
@@ -52,14 +50,13 @@ export class LoginComponent implements OnInit {
         this.router.navigate(['/']);
       },
       error: () => { 
-        this.loading = false; 
         this.errorMsg = 'Email hoặc mật khẩu không đúng.'; 
+        this.cdr.detectChanges(); // Vẫn giữ lại để ép cập nhật thông báo lỗi lên UI ngay lập tức
       }
     });
   }
 
-  loginWithSocial(provider: 'google' | 'facebook' | 'github') {
-    this.loading = true; 
+  loginWithSocial(provider: 'Google' | 'Facebook' | 'GitHub') {
     this.errorMsg = '';
     this.auth.loginSocial(provider);
   }

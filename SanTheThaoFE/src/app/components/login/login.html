@@ -32,23 +32,23 @@
       }
     </div>
 
-    <button type="submit" class="btn-submit" [disabled]="loading">
-      {{ loading ? 'Đang xử lý...' : 'Đăng nhập' }}
+    <button type="submit" class="btn-submit" >
+      Đăng nhập
     </button>
 
     <div class="social-login-container">
       <div class="social-divider"><span>Hoặc đăng nhập bằng</span></div>
       <div class="social-buttons">
         
-        <button type="button" (click)="loginWithSocial('google')" [disabled]="loading" class="btn-social">
+        <button type="button" (click)="loginWithSocial('Google')"  class="btn-social">
           <img src="https://img.icons8.com/?size=100&id=4hR4Ih04Je2t&format=png&color=000000" alt="Google"> Google
         </button>
 
-        <button type="button" (click)="loginWithSocial('facebook')" [disabled]="loading" class="btn-social">
+        <button type="button" (click)="loginWithSocial('Facebook')"  class="btn-social">
           <img src="https://img.icons8.com/?size=100&id=118497&format=png&color=000000" alt="Facebook"> Facebook
         </button>
 
-        <button type="button" (click)="loginWithSocial('github')" [disabled]="loading" class="btn-social">
+        <button type="button" (click)="loginWithSocial('GitHub')"  class="btn-social">
           <img src="https://img.icons8.com/?size=100&id=62856&format=png&color=000000" alt="Github"> Github
         </button>
 

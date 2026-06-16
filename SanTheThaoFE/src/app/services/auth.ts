@@ -15,15 +15,20 @@ export class AuthService {
     return this.http.post<any>(`${this.api}/register`, data);
   }
 
-
-
   saveUser(user: any) {
-    localStorage.setItem('user', JSON.stringify(user));
+    if (user) {
+      localStorage.setItem('user', JSON.stringify(user));
+    }
   }
 
   getUser(): any {
     const u = localStorage.getItem('user');
-    return u ? JSON.parse(u) : null;
+    // Bọc try-catch đề phòng parse lỗi chuỗi String không hợp lệ gây sập app
+    try {
+      return u ? JSON.parse(u) : null;
+    } catch {
+      return null;
+    }
   }
 
   logout() {
@@ -35,12 +40,14 @@ export class AuthService {
   }
 
   isAdmin() {
+    // Dùng toLowerCase() check cho gọn, đỡ phải viết || rườm rà
     const role = this.getUser()?.role;
-    return role === 'Admin' || role === 'admin';
+    return role?.toLowerCase() === 'admin';
   }
 
-    // Chuyển thành kiểu void vì dùng window.location.href sẽ làm reload/chuyển toàn bộ trang
   loginSocial(provider: 'google' | 'facebook' | 'github'): void {
-    window.location.href = `${this.api}/${provider}`;
+    // Backend của mày cấu hình endpoint là: api/Auth/login/{provider}
+    // Trong khi biến api đang là: .../api/auth => Thiếu chữ /login
+    window.location.href = `${this.api}/login/${provider}`; 
   }
 }

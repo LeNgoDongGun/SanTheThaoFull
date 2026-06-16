@@ -1,11 +1,9 @@
 namespace SanTheThaoAPI.DTOs;
 
-// Dùng Record Positional Syntax - Ngắn gọn trên đúng 1 dòng cho mỗi DTO nhận dữ liệu
 public record LoginDto(string Email = "", string Password = "");
 
 public record RegisterDto(string FullName = "", string Email = "", string PhoneNumber = "", string Password = "");
 
-// DTO trả về kết quả: Thêm Constructor nhận vào Model User để Controller không phải map tay
 public class AuthResponseDto
 {
     public int Id { get; set; }
@@ -15,7 +13,7 @@ public class AuthResponseDto
 
     public AuthResponseDto() { }
     
-    // Nhận trực tiếp model User để tự bốc tách dữ liệu
+    // Tự động bốc tách dữ liệu từ Model User sang DTO
     public AuthResponseDto(Models.User u)
     {
         Id = u.Id;
@@ -25,7 +23,6 @@ public class AuthResponseDto
     }
 }
 
-// Giữ nguyên class Generic này nhưng viết định dạng cho thoáng mắt
 public class ApiResponse<T>
 {
     public bool Success { get; set; }

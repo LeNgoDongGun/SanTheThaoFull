@@ -30,7 +30,7 @@
       }
     </div>
 
-    <button type="submit"  class="btn-submit">
+    <button type="submit" [disabled]="loading" class="btn-submit">
       {{ loading ? 'Đang xử lý...' : 'Đăng nhập' }}
     </button>
 

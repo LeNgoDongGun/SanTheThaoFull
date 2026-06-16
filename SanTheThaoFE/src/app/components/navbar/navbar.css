@@ -1,7 +1,7 @@
 :host {
-  /* Khai báo biến để tái sử dụng màu sắc gọn gàng */
   --bg-navbar: #0f172a;
   --primary-color: #3b82f6;
+  --primary-hover: #2563eb;
   --admin-color: #f59e0b;
   --text-muted: #94a3b8;
   --text-light: #cbd5e1;
@@ -19,19 +19,18 @@
   align-items: center;
 }
 
-.nav-left, 
-.nav-right {
+.nav-left, .nav-right {
   display: flex;
   align-items: center;
   gap: 24px;
 }
 
-/* Định dạng chung cho tất cả các liên kết trong navbar */
+/* Định dạng các liên kết */
 .navbar a {
   color: var(--text-light);
   text-decoration: none;
   font-size: 14px;
-  transition: color 0.2s ease; /* Thêm hiệu ứng mượt mà khi hover */
+  transition: all 0.2s ease;
 }
 
 .navbar a:hover,
@@ -42,7 +41,6 @@
 
 /* Logo */
 .logo {
-  color: #ffffff;
   font-weight: 700;
   font-size: 20px;
   margin-right: 16px;
@@ -52,7 +50,8 @@
 }
 
 .logo-img {
-  height: 32px; /* Dùng chiều cao cố định giúp logo ổn định hơn dùng % */
+  height: 32px;
+  width: auto;
   object-fit: contain;
 }
 
@@ -60,17 +59,39 @@
   color: var(--primary-color);
 }
 
-/* Các nút chức năng đặc biệt */
+/* Thanh tìm kiếm */
+.search-input {
+  background: #1e293b;
+  border: 1px solid #334155;
+  color: white;
+  padding: 8px 14px;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  width: 180px;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.search-input:focus {
+  border-color: var(--primary-color); /* Đổi màu viền khi bấm vào gõ chữ */
+}
+
+/* Nút Đăng ký */
 .btn-register {
   background: var(--primary-color);
-  color: #ffffff;
+  color: #ffffff !important; /* Giữ màu chữ luôn trắng */
   padding: 8px 18px;
   border-radius: 6px;
   font-weight: 600;
 }
 
+.btn-register:hover {
+  background: var(--primary-hover);
+}
+
+/* Nút Admin */
 .btn-admin {
-  color: var(--admin-color);
+  color: var(--admin-color) !important;
 }
 
 .user-name {
@@ -78,6 +99,7 @@
   font-size: 14px;
 }
 
+/* Nút Đăng xuất */
 .btn-logout {
   background: transparent;
   border: 1px solid #475569;
@@ -92,4 +114,5 @@
 .btn-logout:hover {
   color: #ffffff;
   border-color: #ffffff;
+  background: #1e293b;
 }

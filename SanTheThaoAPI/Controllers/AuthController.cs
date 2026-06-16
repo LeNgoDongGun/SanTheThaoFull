@@ -44,6 +44,7 @@ public class AuthController(SanTheThaoContext context) : ControllerBase
         return Ok(ApiResponse<AuthResponseDto>.Ok(new(u), "Đăng ký thành công"));
     }
 
+    // 
     [HttpGet("login/{provider}")]
     public IActionResult LoginSocial(string provider) 
         => Challenge(new AuthenticationProperties { RedirectUri = Url.Action("SocialCallback") }, provider);

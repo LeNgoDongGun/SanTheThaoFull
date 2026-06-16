@@ -1,21 +1,64 @@
+using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authentication.Google;
 using Microsoft.EntityFrameworkCore;
 using SanTheThaoAPI.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
+
+
+// THÊM DÒNG NÀY VÀO ĐÂY ĐỂ ĐĂNG KÝ IHttpClientFactory
+builder.Services.AddHttpClient();
+
+// 1. Cấu hình Controller và JSON Options
 builder.Services.AddControllers()
     .AddJsonOptions(x => x.JsonSerializerOptions.ReferenceHandler =
         System.Text.Json.Serialization.ReferenceHandler.IgnoreCycles);
 
+// 2. Cấu hình Database Context
 builder.Services.AddDbContext<SanTheThaoContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
+// 3. Cấu hình CORS cho Angular
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowAngular", policy =>
-        policy.WithOrigins("http://localhost:4200")
+        policy.WithOrigins("http://localhost:4200") // Cho phép Angular gọi sang
               .AllowAnyHeader()
-              .AllowAnyMethod());
+              .AllowAnyMethod()
+              .SetIsOriginAllowed(origin => true) // THÊM MỚI: Cho phép nhận request động từ mọi nguồn (rất tốt khi MoMo Sandbox bắn IPN về endpoint backend của mày)
+              .AllowCredentials()); 
+});
+
+// 4. CẤU HÌNH AUTHENTICATION CHO GOOGLE (THÊM MỚI TẠI ĐÂY)
+builder.Services.AddAuthentication(options =>
+{
+    options.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+    options.DefaultChallengeScheme = GoogleDefaults.AuthenticationScheme;
+})
+.AddCookie()
+.AddGoogle(options =>
+{
+    // Đọc thông tin Credentials từ file appsettings.json
+    options.ClientId = builder.Configuration["Authentication:Google:ClientId"] ?? "";
+    options.ClientSecret = builder.Configuration["Authentication:Google:ClientSecret"] ?? "";
+    
+    // Endpoint mặc định xử lý callback từ phía Google Auth Server
+    options.CallbackPath = "/signin-google";
+})
+.AddFacebook(options =>
+{
+    options.AppId = builder.Configuration["Authentication:Facebook:AppId"] ?? "";
+    options.AppSecret = builder.Configuration["Authentication:Facebook:AppSecret"] ?? "";
+    options.CallbackPath = "/signin-facebook";
+})
+.AddGitHub(options =>
+{
+    options.ClientId = builder.Configuration["Authentication:GitHub:ClientId"] ?? "";
+    options.ClientSecret = builder.Configuration["Authentication:GitHub:ClientSecret"] ?? "";
+    options.CallbackPath = "/signin-github";
+    // GitHub yêu cầu quyền truy cập email cá nhân
+    options.Scope.Add("user:email"); 
 });
 
 builder.Services.AddEndpointsApiExplorer();
@@ -23,10 +66,21 @@ builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
 
+
+// Cấu hình HTTP request pipeline.
 app.UseSwagger();
 app.UseSwaggerUI();
-app.UseCors("AllowAngular");
-app.UseAuthorization();
-app.MapControllers();
+
+// CHUYỂN DÒNG NÀY LÊN ĐÂY
 app.UseHttpsRedirection();
+
+
+app.UseCors("AllowAngular");
+
+// THÊM MỚI: Bắt buộc phải đặt UseAuthentication trước UseAuthorization
+app.UseAuthentication(); 
+app.UseAuthorization();
+
+app.MapControllers();
+
 app.Run();

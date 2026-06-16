@@ -1,5 +1,5 @@
-import { Component } from '@angular/core';
-import { Router, RouterLink, RouterLinkActive } from '@angular/router';
+import { Component, inject } from '@angular/core';
+import { RouterLink, RouterLinkActive } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { AuthService } from '../../services/auth';
@@ -7,17 +7,13 @@ import { AuthService } from '../../services/auth';
 @Component({
   selector: 'app-navbar',
   standalone: true,
-  imports: [RouterLink, RouterLinkActive, CommonModule, FormsModule],
-  templateUrl: './navbar.html'
+  imports: [RouterLink, RouterLinkActive, CommonModule],
+  templateUrl: './navbar.html', // Quay xe về với file HTML chính chủ
+  styleUrls: ['./navbar.css']    // Nếu có file css riêng
 })
 export class NavbarComponent {
-  constructor(public auth: AuthService, private router: Router) { }
-  keyword = '';
-
-  search() {
-    if (!this.keyword.trim()) return;
-    this.router.navigate(['/courts'], { queryParams: { search: this.keyword } });
-  }
+  // Dùng inject nhìn hiện đại hơn hẳn constructor cũ
+  public auth = inject(AuthService); 
 
   logout() {
     this.auth.logout();

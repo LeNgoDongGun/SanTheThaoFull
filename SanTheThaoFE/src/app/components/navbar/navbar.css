@@ -1,26 +1,95 @@
+:host {
+  /* Khai báo biến để tái sử dụng màu sắc gọn gàng */
+  --bg-navbar: #0f172a;
+  --primary-color: #3b82f6;
+  --admin-color: #f59e0b;
+  --text-muted: #94a3b8;
+  --text-light: #cbd5e1;
+}
+
 .navbar {
-    display: flex;
-    justify-content: space-between;
-    background: #2c3e50;
-    padding: 10px 20px;
+  background: var(--bg-navbar);
+  padding: 12px 24px;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
 
-.navbar a {
-    color: white;
-    margin-right: 15px;
-    text-decoration: none;
-}
-
-.navbar a:hover {
-    text-decoration: underline;
-}
-
+.nav-left, 
 .nav-right {
-    display: flex;
-    align-items: center;
+  display: flex;
+  align-items: center;
+  gap: 24px;
 }
 
-.nav-right span {
-    color: white;
-    margin-right: 10px;
+/* Định dạng chung cho tất cả các liên kết trong navbar */
+.navbar a {
+  color: var(--text-light);
+  text-decoration: none;
+  font-size: 14px;
+  transition: color 0.2s ease; /* Thêm hiệu ứng mượt mà khi hover */
+}
+
+.navbar a:hover,
+.navbar .active-link {
+  color: #ffffff;
+  font-weight: 600;
+}
+
+/* Logo */
+.logo {
+  color: #ffffff;
+  font-weight: 700;
+  font-size: 20px;
+  margin-right: 16px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.logo-img {
+  height: 32px; /* Dùng chiều cao cố định giúp logo ổn định hơn dùng % */
+  object-fit: contain;
+}
+
+.brand-color {
+  color: var(--primary-color);
+}
+
+/* Các nút chức năng đặc biệt */
+.btn-register {
+  background: var(--primary-color);
+  color: #ffffff;
+  padding: 8px 18px;
+  border-radius: 6px;
+  font-weight: 600;
+}
+
+.btn-admin {
+  color: var(--admin-color);
+}
+
+.user-name {
+  color: var(--text-muted);
+  font-size: 14px;
+}
+
+.btn-logout {
+  background: transparent;
+  border: 1px solid #475569;
+  color: var(--text-muted);
+  padding: 6px 14px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 13px;
+  transition: all 0.2s ease;
+}
+
+.btn-logout:hover {
+  color: #ffffff;
+  border-color: #ffffff;
 }

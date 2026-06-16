@@ -1,0 +1,28 @@
+<div class="result-container" *ngIf="!loading">
+  
+  <div *ngIf="isSuccess" class="result-card success-box">
+    <div class="icon">🎉</div>
+    <h2>Đặt Sân Thành Công!</h2>
+    <p class="msg-detail">{{ message }}</p>
+    <div class="info-tag">
+      Phương thức: {{ paymentMethod === 'Momo' ? '🔮 Ví MoMo' : '💵 Tiền mặt tại quầy' }}
+    </div>
+  </div>
+
+  <div *ngIf="!isSuccess" class="result-card error-box">
+    <div class="icon">❌</div>
+    <h2>Đặt Sân Thất Bại</h2>
+    <p class="msg-detail">{{ message }}</p>
+    <p class="suggest-text">Yêu cầu đặt lại sân hoặc chọn khung giờ khác thích hợp hơn.</p>
+  </div>
+
+  <div class="action-buttons">
+    <a routerLink="/courts" class="btn btn-secondary">🏟️ Tiếp tục đặt sân</a>
+    <a routerLink="/my-bookings" class="btn btn-primary">📅 Xem lịch sử đặt sân</a>
+  </div>
+
+</div>
+
+<div class="loading-box" *ngIf="loading">
+  <p>🔄 Đang kiểm tra kết quả giao dịch từ MoMo...</p>
+</div>

@@ -3,7 +3,7 @@ import { RouterOutlet } from '@angular/router';
 import { NavbarComponent } from './components/navbar/navbar';
 import { FormsModule } from '@angular/forms';
 import { FooterComponent } from './components/footer/footer';
-
+import { ChatbotComponent } from './components/chatbot/chatbot';
 @Component({
   selector: 'app-root',
   standalone: true,
@@ -11,12 +11,9 @@ import { FooterComponent } from './components/footer/footer';
     RouterOutlet,
     NavbarComponent,
     FormsModule,
-    FooterComponent
+    FooterComponent,
+    ChatbotComponent
   ],
-  template: `
-    <app-navbar></app-navbar>
-    <router-outlet></router-outlet>
-    <app-footer></app-footer>
-  `
+  templateUrl: 'app.html'
 })
 export class App { }

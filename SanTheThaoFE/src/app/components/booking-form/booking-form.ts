@@ -10,14 +10,21 @@ import { AuthService } from '../../services/auth';
   selector: 'app-booking-form',
   standalone: true,
   imports: [CommonModule, FormsModule, RouterLink],
-  templateUrl: './booking-form.html'
+  templateUrl: './booking-form.html',
+  styleUrl: 'booking-form.css'
 })
 export class BookingFormComponent implements OnInit {
   court: any = null;
   booking: any = {
-    courtId: 0, userId: 0,
-    bookingDate: '', startTime: '', endTime: '',
-    totalPrice: 0, status: 0, note: ''
+    courtId: 0, 
+    userId: 0,
+    bookingDate: '', 
+    startTime: '', 
+    endTime: '',
+    totalPrice: 0, 
+    status: 0, 
+    note: '',
+    paymentMethod: 'Cash' // Thêm trường này để nhận diện từ template HTML
   };
   today = new Date().toISOString().split('T')[0];
   loading = false;
@@ -38,7 +45,9 @@ export class BookingFormComponent implements OnInit {
     this.booking.userId = this.auth.getUser()?.id || 0;
 
     this.courtService.getById(courtId).subscribe(court => {
-      this.court = court;
+      // Bọc thêm res.data ?? res đề phòng dữ liệu trả về bị bọc object
+      const res: any = court;
+      this.court = res.data ?? res;
       this.cdr.detectChanges();
     });
   }
@@ -67,10 +76,25 @@ export class BookingFormComponent implements OnInit {
     if (this.booking.endTime.length === 5) this.booking.endTime += ':00';
 
     this.bookingService.create(this.booking).subscribe({
-      next: () => this.router.navigate(['/my-bookings']),
+      next: (res: any) => {
+        this.loading = false;
+
+        // BÊ NGUYÊN LOGIC LUỒNG ĐIỀU HƯỚNG TỪ BẢN MỚI SANG:
+        // LUỒNG 1: Thanh toán MoMo thành công (Backend trả về link)
+        if (this.booking.paymentMethod === 'Momo' && res?.payUrl) {
+          window.location.href = res.payUrl;
+        } 
+        // LUỒNG 2: Thanh toán tiền mặt (Đã đổi từ /my-bookings sang trang booking-result)
+        else {
+          this.router.navigate(['/booking-result'], { 
+            queryParams: { status: 'success', method: 'Cash' } 
+          });
+        }
+      },
       error: (err: any) => {
         this.loading = false;
-        this.errorMsg = err?.error?.message || 'Đặt sân thất bại, vui lòng thử lại.';
+        console.error('Lỗi hệ thống đặt sân:', err);
+        this.errorMsg = err?.error?.message || 'Không thể kết nối đến server (Mã lỗi: ' + err.status + ')';
         this.cdr.detectChanges();
       }
     });

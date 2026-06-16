@@ -1,6 +1,62 @@
-<h2>Login</h2>
-<input [(ngModel)]="username" placeholder="Username"><br><br>
+<div class="login-container">
+  <form class="login-card" #loginForm="ngForm" (ngSubmit)="loginForm.valid && submit()">
+    <h2 class="login-title">Đăng nhập</h2>
 
-<input [(ngModel)]="password" type="password" placeholder="Password"><br><br>
+    @if (errorMsg) { 
+      <div class="error-alert">{{ errorMsg }}</div> 
+    }
 
-<button (click)="login()">Login</button>
+    <div class="form-group">
+      <label class="form-label">Email</label>
+      <input type="email" name="email" [(ngModel)]="email" #emailModel="ngModel" 
+             required email placeholder="email@example.com" class="form-input">
+      
+      @if ((emailModel.touched || loginForm.submitted) && emailModel.invalid) {
+        <small class="error-text">
+          @if (emailModel.errors?.['required']) { Vui lòng nhập Email. }
+          @else if (emailModel.errors?.['email']) { Định dạng Email không hợp lệ. }
+        </small>
+      }
+    </div>
+
+    <div class="form-group-password">
+      <label class="form-label">Mật khẩu</label>
+      <input type="password" name="password" [(ngModel)]="password" #passwordModel="ngModel" 
+             required minlength="6" placeholder="••••••••" class="form-input">
+      
+      @if ((passwordModel.touched || loginForm.submitted) && passwordModel.invalid) {
+        <small class="error-text">
+          @if (passwordModel.errors?.['required']) { Vui lòng nhập mật khẩu. }
+          @else if (passwordModel.errors?.['minlength']) { Mật khẩu phải có ít nhất 6 ký tự. }
+        </small>
+      }
+    </div>
+
+    <button type="submit" class="btn-submit" [disabled]="loading">
+      {{ loading ? 'Đang xử lý...' : 'Đăng nhập' }}
+    </button>
+
+    <div class="social-login-container">
+      <div class="social-divider"><span>Hoặc đăng nhập bằng</span></div>
+      <div class="social-buttons">
+        
+        <button type="button" (click)="loginWithSocial('google')" [disabled]="loading" class="btn-social">
+          <img src="https://img.icons8.com/?size=100&id=4hR4Ih04Je2t&format=png&color=000000" alt="Google"> Google
+        </button>
+
+        <button type="button" (click)="loginWithSocial('facebook')" [disabled]="loading" class="btn-social">
+          <img src="https://img.icons8.com/?size=100&id=118497&format=png&color=000000" alt="Facebook"> Facebook
+        </button>
+
+        <button type="button" (click)="loginWithSocial('github')" [disabled]="loading" class="btn-social">
+          <img src="https://img.icons8.com/?size=100&id=62856&format=png&color=000000" alt="Github"> Github
+        </button>
+
+      </div>
+    </div>
+
+    <p class="register-text">
+      Chưa có tài khoản? <a routerLink="/register" class="register-link">Đăng ký ngay</a>
+    </p>
+  </form>
+</div>

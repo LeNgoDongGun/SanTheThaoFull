@@ -1,0 +1,134 @@
+.login-container {
+  min-height: 80vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #f8fafc;
+  padding: 24px;
+}
+.login-card {
+  background: white;
+  border-radius: 16px;
+  padding: 36px;
+  width: 100%;
+  max-width: 420px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+}
+.login-header {
+  text-align: center;
+  margin-bottom: 28px;
+}
+.login-title {
+  text-align: center;
+  font-weight: 700;
+}
+
+.error-alert {
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  border-radius: 8px;
+  padding: 12px;
+  margin-bottom: 16px;
+  color: #dc2626;
+  font-size: 0.875rem;
+}
+.form-group,
+.social-login-container {
+  margin-bottom: 16px;
+}
+.form-group-password {
+  margin-bottom: 24px;
+}
+.form-label {
+  display: block;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #374151;
+  margin-bottom: 6px;
+}
+.form-input {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  box-sizing: border-box;
+}
+
+.btn-submit {
+  width: 100%;
+  background: #3b82f6;
+  color: white;
+  border: none;
+  padding: 12px;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+.btn-submit:hover{
+  background: #3b82f6;
+}
+.register-text {
+  text-align: center;
+  margin-top: 20px;
+  font-size: 0.875rem;
+  color: #64748b;
+}
+.register-link {
+  color: #3b82f6;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+/* Khu vực Social Button */
+.social-divider {
+  display: flex;
+  align-items: center;
+  text-align: center;
+  margin-bottom: 15px;
+  color: #777;
+  font-size: 14px;
+}
+.social-divider::before,
+.social-divider::after {
+  content: "";
+  flex: 1;
+  border-bottom: 1px solid #e0e0e0;
+}
+.social-divider::before {
+  margin-right: 0.25em;
+}
+.social-divider::after {
+  margin-left: 0.25em;
+}
+
+.social-buttons {
+  display: flex;
+  gap: 10px;
+  justify-content: space-between;
+}
+.btn-social {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 10px 8px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  background-color: #fff;
+  cursor: pointer;
+  font-weight: 500;
+  font-size: 13px;
+  transition: all 0.2s;
+}
+.btn-social img {
+  width: 16px;
+  height: 16px;
+}
+.btn-social:hover:not([disabled]) {
+  background-color: #f8f9fa;
+  border-color: #999;
+  transform: translateY(-1px);
+}

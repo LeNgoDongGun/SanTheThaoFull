@@ -1,72 +1,56 @@
-<footer style="background:#0f172a;color:#94a3b8;padding:48px 24px 24px">
-    <div style="max-width:1200px;margin:auto">
-        <div style="display:grid;grid-template-columns:2fr 1fr 1fr 1.5fr;gap:40px;margin-bottom:40px">
+<footer class="footer-container">
+  <div class="footer-content">
+    <div class="footer-grid">
 
-            <!-- Logo + mô tả -->
-            <div>
-                <div style="font-size:1.3rem;font-weight:800;color:white;margin-bottom:12px">
-                    🏟️ Sân <span style="color:#3b82f6">Thể Thao</span>
-                </div>
-                <p style="font-size:0.875rem;line-height:1.7;margin-bottom:20px">
-                    Hệ thống đặt sân thể thao trực tuyến — nhanh chóng, tiện lợi và uy tín.
-                </p>
-                <div style="display:flex;gap:10px">
-                    <a href="#"
-                        style="background:#1e293b;color:white;width:36px;height:36px;border-radius:8px;display:flex;align-items:center;justify-content:center;text-decoration:none">f</a>
-                    <a href="#"
-                        style="background:#1e293b;color:white;width:36px;height:36px;border-radius:8px;display:flex;align-items:center;justify-content:center;text-decoration:none">in</a>
-                    <a href="#"
-                        style="background:#1e293b;color:white;width:36px;height:36px;border-radius:8px;display:flex;align-items:center;justify-content:center;text-decoration:none">yt</a>
-                </div>
-            </div>
-
-            <!-- Đặt sân -->
-            <div>
-                <h4 style="color:white;font-weight:700;margin-bottom:16px;font-size:0.875rem;letter-spacing:0.05em">ĐẶT
-                    SÂN</h4>
-                <div style="display:flex;flex-direction:column;gap:10px;font-size:0.875rem">
-                    <a routerLink="/courts" [queryParams]="{sportTypeId:1}"
-                        style="color:#94a3b8;text-decoration:none">🌐 Bóng đá</a>
-                    <a routerLink="/courts" [queryParams]="{sportTypeId:2}"
-                        style="color:#94a3b8;text-decoration:none">🏸 Cầu lông</a>
-                    <a routerLink="/courts" [queryParams]="{sportTypeId:3}"
-                        style="color:#94a3b8;text-decoration:none">🏐 Bóng chuyền</a>
-                    <a routerLink="/courts" [queryParams]="{sportTypeId:4}"
-                        style="color:#94a3b8;text-decoration:none">🏀 Bóng rổ</a>
-                    <a routerLink="/courts" [queryParams]="{sportTypeId:5}"
-                        style="color:#94a3b8;text-decoration:none">🏓 Pickleball</a>
-                </div>
-            </div>
-
-            <!-- Hỗ trợ -->
-            <div>
-                <h4 style="color:white;font-weight:700;margin-bottom:16px;font-size:0.875rem;letter-spacing:0.05em">HỖ
-                    TRỢ</h4>
-                <div style="display:flex;flex-direction:column;gap:10px;font-size:0.875rem">
-                    <a routerLink="/news" style="color:#94a3b8;text-decoration:none">Tin tức</a>
-                    <a routerLink="/register" style="color:#94a3b8;text-decoration:none">Đăng ký</a>
-                    <a routerLink="/login" style="color:#94a3b8;text-decoration:none">Đăng nhập</a>
-                </div>
-            </div>
-
-            <!-- Liên hệ -->
-            <div>
-                <h4 style="color:white;font-weight:700;margin-bottom:16px;font-size:0.875rem;letter-spacing:0.05em">LIÊN
-                    HỆ</h4>
-                <div style="display:flex;flex-direction:column;gap:10px;font-size:0.875rem">
-                    <span>📍 123 Nguyễn Văn A, TP.HCM</span>
-                    <span>📞 0901 234 567</span>
-                    <span>✉️ contact&#64;santhethao.com</span>
-                    <span>🕐 Mở cửa 06:00 – 22:00 hàng ngày</span>
-                </div>
-            </div>
+      <div class="footer-brand">
+        <div class="footer-logo">
+          🏟️ Sân <span style="color:#3b82f6">Thể Thao</span>
         </div>
-
-        <!-- Copyright -->
-        <div
-            style="border-top:1px solid #1e293b;padding-top:24px;display:flex;justify-content:space-between;font-size:0.8rem">
-            <span>© 2025 Sân Thể Thao. All rights reserved.</span>
-            <span>Made with ❤️ in Việt Nam</span>
+        <p class="footer-desc">
+          Hệ thống đặt sân thể thao trực tuyến — nhanh chóng, tiện lợi và uy tín.
+        </p>
+        <div class="social-links">
+          <a href="#" class="social-icon">f</a>
+          <a href="#" class="social-icon">in</a>
+          <a href="#" class="social-icon">yt</a>
         </div>
+      </div>
+
+      <div class="footer-links-col">
+        <h4>ĐẶT SÂN</h4>
+        <div class="links-group">
+          <a routerLink="/courts" [queryParams]="{sportTypeId:1}">🌐 Bóng đá</a>
+          <a routerLink="/courts" [queryParams]="{sportTypeId:2}">🏸 Cầu lông</a>
+          <a routerLink="/courts" [queryParams]="{sportTypeId:3}">🏐 Bóng chuyền</a>
+          <a routerLink="/courts" [queryParams]="{sportTypeId:4}">🏀 Bóng rổ</a>
+          <a routerLink="/courts" [queryParams]="{sportTypeId:5}">🏓 Pickleball</a>
+        </div>
+      </div>
+
+      <div class="footer-links-col">
+        <h4>HỖ TRỢ</h4>
+        <div class="links-group">
+          <a routerLink="/news">Tin tức</a>
+          <a routerLink="/register">Đăng ký</a>
+          <a routerLink="/login">Đăng nhập</a>
+        </div>
+      </div>
+
+      <div class="footer-links-col">
+        <h4>LIÊN HỆ</h4>
+        <div class="contact-info">
+          <span>📍 Kbang, Gia Lai</span>
+          <span>📞 0901 234 567</span>
+          <span>✉️ contact&#64;santhethao.com</span>
+          <span>🕐 Mở cửa 06:00 – 22:00 hàng ngày</span>
+        </div>
+      </div>
+
     </div>
+
+    <div class="footer-bottom">
+      <span>© 2026 Sân Thể Thao. All rights reserved.</span>
+      <span>Made with ❤️ in Việt Nam</span>
+    </div>
+  </div>
 </footer>

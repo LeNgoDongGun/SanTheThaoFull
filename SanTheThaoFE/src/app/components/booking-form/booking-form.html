@@ -1,86 +1,75 @@
-<div style="max-width:560px;margin:auto;padding:32px 24px">
+<div class="booking-container">
 
-    <!-- Breadcrumb -->
-    <div style="font-size:0.85rem;color:#64748b;margin-bottom:20px">
-        <a routerLink="/courts" style="color:#3b82f6;text-decoration:none">← Quay lại danh sách sân</a>
+  <div class="breadcrumb">
+    <a routerLink="/courts">← Quay lại danh sách sân</a>
+  </div>
+
+  <h2>🗓️ Đặt sân</h2>
+
+  <div *ngIf="court" class="court-card">
+    <div class="court-icon">
+      {{ court.sportType?.icon || '🏟️' }}
+    </div>
+    <div class="court-info">
+      <h3>{{ court.name }}</h3>
+      <p class="sport-type">{{ court.sportType?.name }}</p>
+      <p class="price">💰 Giá sân: {{ court.pricePerHour | number }}đ / giờ</p>
+    </div>
+  </div>
+
+  <div *ngIf="!auth.isLoggedIn()" class="alert-warn">
+    ⚠️ Bạn cần <a routerLink="/login">đăng nhập</a> để tiến hành đặt sân.
+  </div>
+
+  <div class="booking-card">
+    
+    <div class="form-group">
+      <label>📅 Chọn ngày đặt</label>
+      <input type="date" [(ngModel)]="booking.bookingDate" [min]="today">
     </div>
 
-    <h2 style="font-weight:700;margin-bottom:24px">🗓️ Đặt sân</h2>
-
-    <!-- Thông tin sân -->
-    <div *ngIf="court"
-        style="background:white;border-radius:12px;padding:16px;box-shadow:0 1px 4px rgba(0,0,0,0.08);margin-bottom:24px;display:flex;gap:16px;align-items:center">
-        <div
-            style="width:72px;height:72px;border-radius:10px;background:linear-gradient(135deg,#e0e7ff,#c7d2fe);display:flex;align-items:center;justify-content:center;font-size:2rem;flex-shrink:0">
-            {{ court.sportType?.icon || '🏟️' }}
-        </div>
-        <div>
-            <h3 style="margin:0 0 4px;font-size:1rem;font-weight:700">{{ court.name }}</h3>
-            <p style="margin:0 0 4px;color:#64748b;font-size:0.85rem">{{ court.sportType?.name }}</p>
-            <p style="margin:0;color:#3b82f6;font-weight:700">{{ court.pricePerHour | number }}đ/giờ</p>
-        </div>
+    <div class="form-grid">
+      <div class="form-group">
+        <label>🕐 Giờ bắt đầu</label>
+        <input type="time" [(ngModel)]="booking.startTime" (change)="calcPrice()">
+      </div>
+      <div class="form-group">
+        <label>🕒 Giờ kết thúc</label>
+        <input type="time" [(ngModel)]="booking.endTime" (change)="calcPrice()">
+      </div>
     </div>
 
-    <!-- Cảnh báo chưa đăng nhập -->
-    <div *ngIf="!auth.isLoggedIn()"
-        style="background:#fef3c7;border:1px solid #fbbf24;border-radius:8px;padding:14px;margin-bottom:20px;font-size:0.9rem">
-        ⚠️ Bạn cần
-        <a routerLink="/login" style="color:#d97706;font-weight:600">đăng nhập</a>
-        để đặt sân.
+    <div class="form-group">
+      <label>📝 Ghi chú (tùy chọn)</label>
+      <textarea [(ngModel)]="booking.note" rows="3" placeholder="Ghi chú thêm (ví dụ: thuê thêm vợt, bóng...)"></textarea>
     </div>
 
-    <!-- Form -->
-    <div style="background:white;border-radius:12px;padding:24px;box-shadow:0 1px 4px rgba(0,0,0,0.08)">
-
-        <div style="margin-bottom:16px">
-            <label style="display:block;font-size:0.875rem;font-weight:600;color:#374151;margin-bottom:6px">
-                📅 Ngày đặt
-            </label>
-            <input type="date" [(ngModel)]="booking.bookingDate" [min]="today"
-                style="width:100%;padding:10px 12px;border:1px solid #e2e8f0;border-radius:8px;font-size:0.9rem;box-sizing:border-box">
-        </div>
-
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px">
-            <div>
-                <label style="display:block;font-size:0.875rem;font-weight:600;color:#374151;margin-bottom:6px">
-                    🕐 Giờ bắt đầu
-                </label>
-                <input type="time" [(ngModel)]="booking.startTime" (change)="calcPrice()"
-                    style="width:100%;padding:10px 12px;border:1px solid #e2e8f0;border-radius:8px;font-size:0.9rem;box-sizing:border-box">
-            </div>
-            <div>
-                <label style="display:block;font-size:0.875rem;font-weight:600;color:#374151;margin-bottom:6px">
-                    🕐 Giờ kết thúc
-                </label>
-                <input type="time" [(ngModel)]="booking.endTime" (change)="calcPrice()"
-                    style="width:100%;padding:10px 12px;border:1px solid #e2e8f0;border-radius:8px;font-size:0.9rem;box-sizing:border-box">
-            </div>
-        </div>
-
-        <div style="margin-bottom:20px">
-            <label style="display:block;font-size:0.875rem;font-weight:600;color:#374151;margin-bottom:6px">
-                📝 Ghi chú (tùy chọn)
-            </label>
-            <textarea [(ngModel)]="booking.note" rows="3" placeholder="Ghi chú thêm..."
-                style="width:100%;padding:10px 12px;border:1px solid #e2e8f0;border-radius:8px;font-size:0.9rem;resize:none;box-sizing:border-box"></textarea>
-        </div>
-
-        <!-- Tổng tiền -->
-        <div *ngIf="booking.totalPrice > 0"
-            style="background:#eff6ff;border-radius:8px;padding:14px;margin-bottom:20px;display:flex;justify-content:space-between;align-items:center">
-            <span style="color:#1e40af;font-weight:600">💰 Tổng tiền:</span>
-            <span style="color:#1e40af;font-size:1.2rem;font-weight:700">{{ booking.totalPrice | number }}đ</span>
-        </div>
-
-        <!-- Nút đặt -->
-        <button (click)="submit()" [disabled]="!auth.isLoggedIn() || loading"
-            style="width:100%;background:#3b82f6;color:white;border:none;padding:13px;border-radius:8px;cursor:pointer;font-size:1rem;font-weight:700"
-            [style.opacity]="!auth.isLoggedIn() ? '0.5' : '1'">
-            {{ loading ? 'Đang xử lý...' : '✅ Xác nhận đặt sân' }}
-        </button>
-
-        <p *ngIf="errorMsg" style="margin-top:12px;color:#ef4444;font-size:0.875rem;text-align:center">
-            {{ errorMsg }}
-        </p>
+    <div class="form-group">
+      <label class="section-label">💳 Phương thức thanh toán</label>
+      <div class="payment-methods">
+        <label class="payment-option">
+          <input type="radio" name="paymentMethod" value="Cash" [(ngModel)]="booking.paymentMethod">
+          <span class="option-text">💵 Thanh toán tiền mặt tại quầy</span>
+        </label>
+        <label class="payment-option">
+          <input type="radio" name="paymentMethod" value="Momo" [(ngModel)]="booking.paymentMethod">
+          <span class="option-text">🔮 Thanh toán online qua Ví MoMo</span>
+        </label>
+      </div>
     </div>
+
+    <div *ngIf="booking.totalPrice > 0" class="total-price-box">
+      <span class="label">💰 Tổng tiền tạm tính:</span>
+      <span class="amount">{{ booking.totalPrice | number }}đ</span>
+    </div>
+
+    <button (click)="submit()" [disabled]="!auth.isLoggedIn() || loading" class="btn-submit">
+      {{ loading ? 'Đang xử lý...' : 'Xác nhận đặt sân' }}
+    </button>
+    
+    <p *ngIf="errorMsg" class="error-text">
+      {{ errorMsg }}
+    </p>
+    
+  </div>
 </div>

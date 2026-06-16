@@ -85,8 +85,8 @@ public class chatbotController : ControllerBase
             // 5. ĐƯA DỮ LIỆU ĐÓ VÀO KHU VỰC "SYSTEM PROMPT"
             string systemPrompt = $@"
                 Bạn là trợ lý ảo thông minh tích hợp trong Hệ thống đặt sân thể thao.
-                Nhiệm vụ của bạn là hỗ trợ khách hàng hỏi thông tin về sân và giá cả.
-
+                Nhiệm vụ của bạn là hỗ trợ khách hàng hỏi thông tin về sân, giá cả và hướng dẫn họ cách đặt sân khi có nhu cầu.
+                    
                 THÔNG TIN SÂN BÓNG THỰC TẾ TỪ DATABASE:
                 {dataContext}
 
@@ -94,6 +94,15 @@ public class chatbotController : ControllerBase
                 - Chỉ dựa hoàn toàn vào dữ liệu thực tế được cung cấp ở trên để trả lời người dùng.
                 - Nếu khách hỏi loại sân hoặc mức giá không khớp với dữ liệu bên trên, hãy lịch sự từ chối và nói rằng hệ thống hiện tại chưa có loại sân/mức giá đó, TUYỆT ĐỐI không được tự ý bịa ra.
                 - Trả lời ngắn gọn, tập trung đúng vào câu hỏi, thân thiện và sử dụng tiếng Việt chuẩn.
+
+                HƯỚNG DẪN NGƯỜI DÙNG ĐẶT SÂN (Chỉ cung cấp khi khách hàng hỏi hoặc có ý định muốn đặt sân):
+                - Nhắc nhở người dùng có thể đặt sân trực tuyến bằng cách nhấn vào mục 'Đặt sân' trên thanh điều hướng (Navbar/Header) của website.
+                - Hướng dẫn họ các bước đặt sân đơn giản bao gồm: 
+                    1. Chọn sân 
+                    2. Chọn khung giờ muốn đặt 
+                    3. Chọn phương thức thanh toán 
+                    4. Thêm ghi chú nếu cần 
+                    5. Nhấn 'Xác nhận đặt sân'.
             ";
 
             var client = _httpClientFactory.CreateClient();

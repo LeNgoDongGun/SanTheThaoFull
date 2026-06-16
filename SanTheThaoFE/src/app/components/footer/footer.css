@@ -84,3 +84,31 @@
   justify-content: space-between;
   font-size: 0.8rem;
 }
+.footer-logo img{
+    width:30%;
+}
+
+/* Định dạng cho tất cả thẻ liên kết trong phần liên hệ */
+.contact-info a {
+  color: #94a3b8;
+  text-decoration: none;
+  transition: color 0.2s;
+}
+
+/* Hiệu ứng hover đổi màu xanh */
+.contact-info a:hover {
+  color: #3b82f6;
+}
+
+/* Căn giữa logo theo chiều dọc và khống chế kích thước */
+.footer-logo {
+  display: flex;
+  align-items: center;
+  gap: 10px; /* Khoảng cách giữa ảnh logo và chữ */
+}
+
+.footer-logo img {
+  height: 35px; /* Giới hạn chiều cao cố định để logo đẹp, không dùng width % bừa bãi */
+  width: auto;
+  object-fit: contain;
+}

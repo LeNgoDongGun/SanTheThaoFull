@@ -1,29 +1,26 @@
 <nav class="navbar">
   <div class="nav-left">
     <a routerLink="/" class="logo">
-      🏟️ Sân <span style="color:#3b82f6">Thể Thao</span>
+      <img class="logo-img" src="/images/logo/santhethao.logo.png" alt="Sân Thể Thao Logo">
+      Sân <span class="brand-color">Thể Thao</span>
     </a>
 
-    <a routerLink="/" routerLinkActive="active-link" [routerLinkActiveOptions]="{exact:true}">Trang chủ</a>
+    <a routerLink="/" routerLinkActive="active-link" [routerLinkActiveOptions]="{exact: true}">Trang chủ</a>
     <a routerLink="/courts" routerLinkActive="active-link">Đặt sân</a>
     <a routerLink="/news" routerLinkActive="active-link">Tin tức</a>
     <a *ngIf="auth.isLoggedIn()" routerLink="/my-bookings" routerLinkActive="active-link">Lịch sử</a>
-    <a *ngIf="auth.isAdmin()" routerLink="/admin" style="color:#f59e0b" routerLinkActive="active-link">⚙️ Admin</a>
+    <a *ngIf="auth.isAdmin()" routerLink="/admin" routerLinkActive="active-link" class="btn-admin">⚙️ Admin</a>
   </div>
 
   <div class="nav-right">
     <ng-container *ngIf="!auth.isLoggedIn()">
       <a routerLink="/login">Đăng nhập</a>
-      <a routerLink="/register" class="btn-register">
-        Đăng ký
-      </a>
+      <a routerLink="/register" class="btn-register">Đăng ký</a>
     </ng-container>
 
     <ng-container *ngIf="auth.isLoggedIn()">
-      <span>👤 {{ auth.getUser()?.fullName }}</span>
-      <button (click)="logout()">
-        Đăng xuất
-      </button>
+      <span class="user-name">👤 {{ auth.getUser()?.fullName }}</span>
+      <button class="btn-logout" (click)="logout()">Đăng xuất</button>
     </ng-container>
   </div>
 </nav>

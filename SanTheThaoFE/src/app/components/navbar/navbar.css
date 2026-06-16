@@ -1,70 +1,95 @@
+:host {
+  /* Khai báo biến để tái sử dụng màu sắc gọn gàng */
+  --bg-navbar: #0f172a;
+  --primary-color: #3b82f6;
+  --admin-color: #f59e0b;
+  --text-muted: #94a3b8;
+  --text-light: #cbd5e1;
+}
+
 .navbar {
-  background: #0f172a;
+  background: var(--bg-navbar);
   padding: 12px 24px;
   position: sticky;
   top: 0;
   z-index: 100;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
   display: flex;
   justify-content: space-between;
   align-items: center;
 }
 
-.nav-left, .nav-right {
+.nav-left, 
+.nav-right {
   display: flex;
   align-items: center;
   gap: 24px;
 }
 
+/* Định dạng chung cho tất cả các liên kết trong navbar */
 .navbar a {
-  color: #cbd5e1;
+  color: var(--text-light);
   text-decoration: none;
   font-size: 14px;
+  transition: color 0.2s ease; /* Thêm hiệu ứng mượt mà khi hover */
 }
 
-.navbar a:hover {
-  color: white;
+.navbar a:hover,
+.navbar .active-link {
+  color: #ffffff;
+  font-weight: 600;
 }
 
+/* Logo */
 .logo {
-  color: white !important;
-  text-decoration: none;
+  color: #ffffff;
   font-weight: 700;
   font-size: 20px;
   margin-right: 16px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
-.active-link {
-  color: white !important;
-  font-weight: 600;
+.logo-img {
+  height: 32px; /* Dùng chiều cao cố định giúp logo ổn định hơn dùng % */
+  object-fit: contain;
 }
 
+.brand-color {
+  color: var(--primary-color);
+}
+
+/* Các nút chức năng đặc biệt */
 .btn-register {
-  background: #3b82f6;
-  color: white !important;
+  background: var(--primary-color);
+  color: #ffffff;
   padding: 8px 18px;
   border-radius: 6px;
-  text-decoration: none;
-  font-size: 14px;
   font-weight: 600;
 }
 
-.nav-right span {
-  color: #94a3b8;
+.btn-admin {
+  color: var(--admin-color);
+}
+
+.user-name {
+  color: var(--text-muted);
   font-size: 14px;
 }
 
-.nav-right button {
+.btn-logout {
   background: transparent;
   border: 1px solid #475569;
-  color: #94a3b8;
+  color: var(--text-muted);
   padding: 6px 14px;
   border-radius: 6px;
   cursor: pointer;
   font-size: 13px;
+  transition: all 0.2s ease;
 }
 
-.nav-right button:hover {
-  color: white;
-  border-color: white;
+.btn-logout:hover {
+  color: #ffffff;
+  border-color: #ffffff;
 }

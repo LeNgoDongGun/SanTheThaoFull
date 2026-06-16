@@ -66,9 +66,14 @@ builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
 
+
 // Cấu hình HTTP request pipeline.
 app.UseSwagger();
 app.UseSwaggerUI();
+
+// CHUYỂN DÒNG NÀY LÊN ĐÂY
+app.UseHttpsRedirection();
+
 
 app.UseCors("AllowAngular");
 
@@ -77,6 +82,5 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
-app.UseHttpsRedirection();
 
 app.Run();

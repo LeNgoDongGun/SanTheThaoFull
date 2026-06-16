@@ -15,11 +15,6 @@ import { ChatbotComponent } from './components/chatbot/chatbot';
     FooterComponent,
     ChatbotComponent
   ],
-  template: `
-    <app-navbar></app-navbar>
-    <app-chatbot></app-chatbot>
-    <router-outlet></router-outlet>
-    <app-footer></app-footer>
-  `,
+  templateUrl: 'app.html',
 })
 export class App { }

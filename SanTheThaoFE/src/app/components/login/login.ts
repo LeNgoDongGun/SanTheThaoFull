@@ -1,7 +1,7 @@
-import { Component, OnInit } from '@angular/core'; // Thêm OnInit
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Router, RouterLink, ActivatedRoute } from '@angular/router'; // Thêm ActivatedRoute
+import { Router, RouterLink, ActivatedRoute } from '@angular/router';
 import { AuthService } from '../../services/auth';
 
 @Component({
@@ -11,94 +11,49 @@ import { AuthService } from '../../services/auth';
   templateUrl: './login.html',
   styleUrls: ['./login.css']
 })
-export class LoginComponent implements OnInit { // Implement OnInit
-  email = '';
-  password = '';
-  loading = false;
-  errorMsg = '';
+export class LoginComponent implements OnInit {
+  email = ''; password = ''; loading = false; errorMsg = '';
 
-  constructor(
-    private auth: AuthService, 
-    private router: Router,
-    private route: ActivatedRoute // Inject ActivatedRoute vào đây
-  ) { }
+  socials = [
+    { id: 'google' as const, name: 'Google', icon: 'https://img.icons8.com/?size=100&id=4hR4Ih04Je2t&format=png&color=000000' },
+    { id: 'facebook' as const, name: 'Facebook', icon: 'https://img.icons8.com/?size=100&id=118497&format=png&color=000000' },
+    { id: 'github' as const, name: 'Github', icon: 'https://img.icons8.com/?size=100&id=62856&format=png&color=000000' }
+  ];
+
+  constructor(private auth: AuthService, private router: Router, private route: ActivatedRoute) {}
 
   ngOnInit() {
-    // --- XỬ LÝ ĐĂNG NHẬP MXH TRẢ VỀ QUA QUERY PARAMS ---
-      // Hứng dữ liệu từ .NET Redirect trả về qua Query Parameters
-      this.route.queryParams.subscribe(params => {
-        if (params['socialLogin'] === 'true') {
-          this.loading = true;
-          
-          // Tạo object user từ các tham số nhận trên URL
-          const userObj = {
-            id: params['id'] ? +params['id'] : null,
-            email: params['email'],
-            fullName: params['fullName'] ? decodeURIComponent(params['fullName']) : '',
-            role: params['role']
-          };
+    this.route.queryParams.subscribe(p => {
+      if (p['socialLogin'] !== 'true') return;
+      this.loading = true;
 
-          // 1. Lưu thông tin đăng nhập vào localStorage
-          this.auth.saveUser(userObj);
-
-          // 2. TỐI ƯU UX: Xóa sạch query params trên thanh URL để giữ bảo mật và sạch sẽ
-          this.router.navigate([], {
-            relativeTo: this.route,
-            queryParams: { socialLogin: null, id: null, email: null, fullName: null, role: null },
-            queryParamsHandling: 'merge' // Gộp đè giá trị null để xóa chúng đi
-          }).then(() => {
-            // 3. Sau khi URL đã sạch, tiến hành đá về trang chủ
-            this.loading = false;
-            this.router.navigate(['/']);
-          });
-        }
+      this.auth.saveUser({
+        id: p['id'] ? +p['id'] : null,
+        email: p['email'] || '',
+        fullName: p['fullName'] ? decodeURIComponent(p['fullName']) : '',
+        role: p['role'] || ''
       });
-    }
 
-  submit() {
-    if (!this.email || !this.password) {
-      this.errorMsg = 'Vui lòng nhập đầy đủ email và mật khẩu.';
-      return;
-    }
-    
-    this.loading = true;
-    this.errorMsg = '';
-    
-    this.auth.login({ email: this.email, password: this.password }).subscribe({
-      next: (res: any) => this.handleSuccess(res),
-      error: () => this.handleError('Email hoặc mật khẩu không đúng.')
+      this.router.navigate(['/'], {
+        queryParams: { socialLogin: null, id: null, email: null, fullName: null, role: null },
+        queryParamsHandling: 'merge'
+      }).then(() => this.loading = false);
     });
   }
 
-  // --- CÁC HÀM XỬ LÝ ĐĂNG NHẬP MXH ĐÃ ĐƯỢC TỐI ƯU ---
-
-  loginWithGoogle() {
-    this.loading = true;
-    this.errorMsg = '';
-    this.auth.loginSocial('google'); // Gọi trực tiếp, không .subscribe()
+  submit() {
+    this.loading = true; this.errorMsg = '';
+    this.auth.login({ email: this.email.trim(), password: this.password }).subscribe({
+      next: (res: any) => {
+        this.auth.saveUser(res.data || res);
+        this.router.navigate(['/']);
+      },
+      error: () => { this.loading = false; this.errorMsg = 'Email hoặc mật khẩu không đúng.'; }
+    });
   }
 
-  loginWithFacebook() {
-    this.loading = true;
-    this.errorMsg = '';
-    this.auth.loginSocial('facebook'); // Gọi trực tiếp, không .subscribe()
-  }
-
-  loginWithGithub() {
-    this.loading = true;
-    this.errorMsg = '';
-    this.auth.loginSocial('github'); // Gọi trực tiếp, không .subscribe()
-  }
-
-  // Hàm helper để tái sử dụng code xử lý kết quả
-  private handleSuccess(res: any) {
-    this.auth.saveUser(res.data ?? res);
-    this.loading = false;
-    this.router.navigate(['/']);
-  }
-
-  private handleError(msg: string) {
-    this.loading = false;
-    this.errorMsg = msg;
+  loginWithSocial(provider: 'google' | 'facebook' | 'github') {
+    this.loading = true; this.errorMsg = '';
+    this.auth.loginSocial(provider);
   }
 }

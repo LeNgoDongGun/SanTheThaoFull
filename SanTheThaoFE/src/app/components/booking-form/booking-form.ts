@@ -1,90 +1,102 @@
-import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { CourtService } from '../../services/court';
-import { BookingService } from '../../services/booking';
+import { BookingService, BookingRequest } from '../../services/booking';
 import { AuthService } from '../../services/auth';
 
 @Component({
   selector: 'app-booking-form',
   standalone: true,
   imports: [CommonModule, FormsModule, RouterLink],
-  templateUrl: './booking-form.html',
-  styleUrl: 'booking-form.css'
+  templateUrl: './booking-form.html'
 })
 export class BookingFormComponent implements OnInit {
+  private route = inject(ActivatedRoute);
+  private router = inject(Router);
+  private courtService = inject(CourtService);
+  private bookingService = inject(BookingService);
+  public auth = inject(AuthService);
+  private cdr = inject(ChangeDetectorRef);
+
   court: any = null;
-  booking: any = {
-    courtId: 0, 
-    userId: 0,
-    bookingDate: '', 
-    startTime: '', 
+  
+  bookingData = {
+    bookingDate: '',
+    startTime: '',
     endTime: '',
-    totalPrice: 0, 
-    status: 0, 
     note: '',
-    paymentMethod: 'Cash' // Thêm trường này để nhận diện từ template HTML
+    paymentMethod: 'Cash' as 'Cash' | 'Momo', 
+    totalPrice: 0
   };
+
   today = new Date().toISOString().split('T')[0];
   loading = false;
   errorMsg = '';
-
-  constructor(
-    private route: ActivatedRoute,
-    private router: Router,
-    private courtService: CourtService,
-    private bookingService: BookingService,
-    public auth: AuthService,
-    private cdr: ChangeDetectorRef
-  ) { }
+  courtId = 0;
 
   ngOnInit() {
-    const courtId = Number(this.route.snapshot.paramMap.get('courtId'));
-    this.booking.courtId = courtId;
-    this.booking.userId = this.auth.getUser()?.id || 0;
-
-    this.courtService.getById(courtId).subscribe(court => {
-      // Bọc thêm res.data ?? res đề phòng dữ liệu trả về bị bọc object
-      const res: any = court;
-      this.court = res.data ?? res;
-      this.cdr.detectChanges();
+    this.courtId = Number(this.route.snapshot.paramMap.get('courtId'));
+    
+    this.courtService.getById(this.courtId).subscribe({
+      next: (res: any) => {
+        this.court = res.data ?? res;
+        this.cdr.detectChanges();
+      },
+      error: (err) => {
+        this.errorMsg = 'Không thể tải thông tin sân.';
+      }
     });
   }
 
   calcPrice() {
-    if (!this.booking.startTime || !this.booking.endTime || !this.court) return;
-    const [sh, sm] = this.booking.startTime.split(':').map(Number);
-    const [eh, em] = this.booking.endTime.split(':').map(Number);
+    if (!this.bookingData.startTime || !this.bookingData.endTime || !this.court) return;
+    const [sh, sm] = this.bookingData.startTime.split(':').map(Number);
+    const [eh, em] = this.bookingData.endTime.split(':').map(Number);
     const hours = (eh * 60 + em - sh * 60 - sm) / 60;
-    this.booking.totalPrice = hours > 0 ? hours * this.court.pricePerHour : 0;
+    this.bookingData.totalPrice = hours > 0 ? hours * this.court.pricePerHour : 0;
   }
 
   submit() {
-    if (!this.booking.bookingDate || !this.booking.startTime || !this.booking.endTime) {
+    if (!this.bookingData.bookingDate || !this.bookingData.startTime || !this.bookingData.endTime) {
       this.errorMsg = 'Vui lòng điền đầy đủ thông tin.';
       return;
     }
-    if (this.booking.totalPrice <= 0) {
+    if (this.bookingData.totalPrice <= 0) {
       this.errorMsg = 'Giờ kết thúc phải sau giờ bắt đầu.';
       return;
     }
 
     this.loading = true;
     this.errorMsg = '';
-    if (this.booking.startTime.length === 5) this.booking.startTime += ':00';
-    if (this.booking.endTime.length === 5) this.booking.endTime += ':00';
 
-    this.bookingService.create(this.booking).subscribe({
+    // Chuẩn hóa định dạng HH:mm:ss nếu backend .NET core yêu cầu khắt khe
+    let sTime = this.bookingData.startTime;
+    let eTime = this.bookingData.endTime;
+    if (sTime.length === 5) sTime += ':00';
+    if (eTime.length === 5) eTime += ':00';
+
+    const payload: BookingRequest = {
+      courtId: this.courtId,
+      userId: this.auth.getUser()?.id || 0,
+      bookingDate: this.bookingData.bookingDate,
+      startTime: sTime,
+      endTime: eTime,
+      note: this.bookingData.note,
+      paymentMethod: this.bookingData.paymentMethod
+    };
+
+    this.bookingService.create(payload).subscribe({
       next: (res: any) => {
         this.loading = false;
-
-        // BÊ NGUYÊN LOGIC LUỒNG ĐIỀU HƯỚNG TỪ BẢN MỚI SANG:
-        // LUỒNG 1: Thanh toán MoMo thành công (Backend trả về link)
-        if (this.booking.paymentMethod === 'Momo' && res?.payUrl) {
-          window.location.href = res.payUrl;
+        
+        // LUỒNG 1: Chọn MoMo và Backend trả về link thanh toán (Ví dụ: res.payUrl hoặc res.data.payUrl)
+        const payUrl = res?.payUrl || res?.data?.payUrl;
+        if (payload.paymentMethod === 'Momo' && payUrl) {
+          window.location.href = payUrl; 
         } 
-        // LUỒNG 2: Thanh toán tiền mặt (Đã đổi từ /my-bookings sang trang booking-result)
+        // LUỒNG 2: Tiền mặt
         else {
           this.router.navigate(['/booking-result'], { 
             queryParams: { status: 'success', method: 'Cash' } 
@@ -93,8 +105,8 @@ export class BookingFormComponent implements OnInit {
       },
       error: (err: any) => {
         this.loading = false;
-        console.error('Lỗi hệ thống đặt sân:', err);
-        this.errorMsg = err?.error?.message || 'Không thể kết nối đến server (Mã lỗi: ' + err.status + ')';
+        console.error('Lỗi đặt sân:', err);
+        this.errorMsg = err?.error?.message || 'Không thể kết nối đến server.';
         this.cdr.detectChanges();
       }
     });

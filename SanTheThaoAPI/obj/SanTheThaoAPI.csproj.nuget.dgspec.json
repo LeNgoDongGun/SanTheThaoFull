@@ -1,20 +1,20 @@
 {
   "format": 1,
   "restore": {
-    "G:\\SanTheThaoFull\\SanTheThaoAPI\\SanTheThaoAPI.csproj": {}
+    "D:\\angular_cuoiky\\SanTheThaoAPI\\SanTheThaoAPI.csproj": {}
   },
   "projects": {
-    "G:\\SanTheThaoFull\\SanTheThaoAPI\\SanTheThaoAPI.csproj": {
+    "D:\\angular_cuoiky\\SanTheThaoAPI\\SanTheThaoAPI.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "G:\\SanTheThaoFull\\SanTheThaoAPI\\SanTheThaoAPI.csproj",
+        "projectUniqueName": "D:\\angular_cuoiky\\SanTheThaoAPI\\SanTheThaoAPI.csproj",
         "projectName": "SanTheThaoAPI",
-        "projectPath": "G:\\SanTheThaoFull\\SanTheThaoAPI\\SanTheThaoAPI.csproj",
-        "packagesPath": "C:\\Users\\Admin\\.nuget\\packages\\",
-        "outputPath": "G:\\SanTheThaoFull\\SanTheThaoAPI\\obj\\",
+        "projectPath": "D:\\angular_cuoiky\\SanTheThaoAPI\\SanTheThaoAPI.csproj",
+        "packagesPath": "C:\\Users\\pipe\\.nuget\\packages\\",
+        "outputPath": "D:\\angular_cuoiky\\SanTheThaoAPI\\obj\\",
         "projectStyle": "PackageReference",
         "configFilePaths": [
-          "C:\\Users\\Admin\\AppData\\Roaming\\NuGet\\NuGet.Config"
+          "C:\\Users\\pipe\\AppData\\Roaming\\NuGet\\NuGet.Config"
         ],
         "originalTargetFrameworks": [
           "net10.0"

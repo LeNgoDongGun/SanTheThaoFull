@@ -108,6 +108,7 @@ public class chatbotController : ControllerBase
             var client = _httpClientFactory.CreateClient();
             client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", apiKey);
 
+            // Chuẩn bị dữ liệu request gồm tên model (Llama 3.1) và mảng tin nhắn (system, user), temperature dưới dạng Object
             var requestBody = new
             {
                 model = "llama-3.1-8b-instant",
@@ -117,14 +118,16 @@ public class chatbotController : ControllerBase
                     new { role = "user", content = request.Prompt }
                 },
                 temperature = 0.3 // Hạ thấp xuống 0.3 để con AI bám sát dữ liệu DB cực kỳ nghiêm túc, không nói luyên thuyên
+                //temperature là độ sáng tạo càng gần không nó càng không sáng tạo 
             };
 
+            // Dịch Object sang chuỗi JSON và bọc vào định dạng StringContent để chỉ định kiểu dữ liệu gửi đi
             var jsonContent = new StringContent(
                 JsonSerializer.Serialize(requestBody),
                 Encoding.UTF8,
                 "application/json"
             );
-
+            // Bắn gói tin HTTP POST chứa chuỗi JSON thô vừa tạo sang API Groq và ngồi đợi kết quả
             var response = await client.PostAsync(apiUrl, jsonContent);
 
             if (!response.IsSuccessStatusCode)

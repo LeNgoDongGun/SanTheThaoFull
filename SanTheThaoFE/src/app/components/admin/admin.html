@@ -46,28 +46,36 @@
 
     <div *ngIf="activeTab === 'courts'">
         <div style="background:white;border-radius:12px;padding:20px;box-shadow:0 1px 4px rgba(0,0,0,0.08);margin-bottom:24px">
-            <h6 style="font-weight:700;margin:0 0 16px 0">➕ Thêm sân mới</h6>
-            <form (ngSubmit)="addCourt()" style="display:flex;gap:12px;align-items:flex-end;flex-wrap:wrap">
+            <h6 style="font-weight:700;margin:0 0 16px 0">{{ isEditingCourt ? '✏️ Chỉnh sửa thông tin sân' : '➕ Thêm sân mới' }}</h6>
+            <form (ngSubmit)="saveCourt()" style="display:flex;gap:12px;align-items:flex-end;flex-wrap:wrap">
               <div style="flex:1;min-width:140px">
                 <label style="font-size:0.8rem;font-weight:600;display:block;margin-bottom:4px">Môn thể thao</label>
-                <select [(ngModel)]="newCourt.sportTypeId" name="sportTypeId" required style="width:100%;padding:8px;border:1px solid #cbd5e1;border-radius:6px">
+                <select [(ngModel)]="courtForm.sportTypeId" name="sportTypeId" required style="width:100%;padding:8px;border:1px solid #cbd5e1;border-radius:6px">
                   <option value="" disabled>-- Chọn môn --</option>
                   <option *ngFor="let s of sportTypes" [value]="s.id">{{ s.icon }} {{ s.name }}</option>
                 </select>
               </div>
               <div style="flex:1;min-width:140px">
                 <label style="font-size:0.8rem;font-weight:600;display:block;margin-bottom:4px">Tên sân</label>
-                <input type="text" [(ngModel)]="newCourt.name" name="name" placeholder="VD: Sân A3" required style="width:100%;padding:8px;border:1px solid #cbd5e1;border-radius:6px">
+                <input type="text" [(ngModel)]="courtForm.name" name="name" placeholder="VD: Sân A3" required style="width:100%;padding:8px;border:1px solid #cbd5e1;border-radius:6px">
               </div>
               <div style="flex:1;min-width:120px">
                 <label style="font-size:0.8rem;font-weight:600;display:block;margin-bottom:4px">Giá/giờ</label>
-                <input type="number" [(ngModel)]="newCourt.pricePerHour" name="price" required style="width:100%;padding:8px;border:1px solid #cbd5e1;border-radius:6px">
+                <input type="number" [(ngModel)]="courtForm.pricePerHour" name="price" required style="width:100%;padding:8px;border:1px solid #cbd5e1;border-radius:6px">
               </div>
               <div style="flex:1.5;min-width:180px">
                 <label style="font-size:0.8rem;font-weight:600;display:block;margin-bottom:4px">Ảnh sân</label>
-                <input type="file" (change)="onCourtImageSelected($event)" accept="image/*" style="width:100%;padding:5px;border:1px solid #cbd5e1;border-radius:6px">
+                <input type="file" id="courtFileInput" (change)="onCourtImageSelected($event)" accept="image/*" style="width:100%;padding:5px;border:1px solid #cbd5e1;border-radius:6px">
+                <div *ngIf="isEditingCourt" style="font-size:0.7rem;color:#64748b;margin-top:4px">Bỏ trống nếu muốn giữ ảnh cũ</div>
               </div>
-              <button type="submit" style="padding:9px 24px;background:#3b82f6;color:white;border:none;border-radius:6px;font-weight:600;cursor:pointer">Thêm</button>
+              <div style="display:flex;gap:8px">
+                <button type="submit" style="padding:9px 24px;background:#3b82f6;color:white;border:none;border-radius:6px;font-weight:600;cursor:pointer">
+                  {{ isEditingCourt ? 'Cập nhật' : 'Thêm' }}
+                </button>
+                <button *ngIf="isEditingCourt" type="button" (click)="cancelEditCourt()" style="padding:9px 24px;background:#f1f5f9;color:#64748b;border:1px solid #cbd5e1;border-radius:6px;font-weight:600;cursor:pointer">
+                  Hủy
+                </button>
+              </div>
             </form>
           </div>
     
@@ -97,12 +105,23 @@
                   <span style="color:#16a34a;font-weight:700;font-size:0.9rem">{{ c.pricePerHour | number }}đ/h</span>
                 </div>
                 <hr style="border:none;border-top:1px solid #f1f5f9;margin:12px 0">
-                <button (click)="toggleCourt(c)" 
-                        [style.color]="c.isActive ? '#dc2626' : '#16a34a'"
-                        [style.border-color]="c.isActive ? '#fca5a5' : '#86efac'"
-                        style="width:100%;padding:6px;background:transparent;border:1px solid;border-radius:6px;cursor:pointer;font-weight:600;font-size:0.85rem">
-                  {{ c.isActive ? 'Ẩn sân' : 'Mở sân' }}
-                </button>
+                
+                <div style="display:flex;justify-content:space-between;align-items:center">
+                    <div>
+                        <button (click)="toggleCourt(c)" 
+                                [style.color]="c.isActive ? '#dc2626' : '#16a34a'"
+                                [style.border-color]="c.isActive ? '#fca5a5' : '#86efac'"
+                                style="padding:4px 12px;background:transparent;border:1px solid;border-radius:6px;cursor:pointer;font-weight:600;font-size:0.8rem;margin-right:4px">
+                        {{ c.isActive ? 'Ẩn' : 'Mở' }}
+                        </button>
+                        <button (click)="editCourt(c)" style="background:transparent;border:1px solid #cbd5e1;color:#3b82f6;padding:4px 12px;border-radius:6px;cursor:pointer;font-size:0.8rem;font-weight:600">
+                            ✏️ Sửa
+                        </button>
+                    </div>
+                    <button (click)="deleteCourt(c)" style="background:transparent;border:1px solid #fca5a5;color:#ef4444;padding:4px 12px;border-radius:6px;cursor:pointer;font-size:0.8rem">
+                        🗑
+                    </button>
+                </div>
               </div>
             </div>
           </div>

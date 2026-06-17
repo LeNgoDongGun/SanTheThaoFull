@@ -34,7 +34,8 @@ export class AdminComponent implements OnInit {
   news: any[] = [];
   sportTypes: any[] = [];
 
-  newCourt: any = { sportTypeId: '', name: '', pricePerHour: 0, description: '' };
+  isEditingCourt = false;
+  courtForm: any = { id: 0, sportTypeId: '', name: '', pricePerHour: 0, description: '' };
   selectedCourtImage: File | null = null;
 
   bookingStatusFilter: number | null = null;
@@ -80,32 +81,67 @@ export class AdminComponent implements OnInit {
     this.http.get<any[]>(`${this.apiUrl}/users`).subscribe(res => this.users = Array.isArray(res) ? res : (res as any).data || []);
   }
 
+  //court
   onCourtImageSelected(event: any) { this.selectedCourtImage = event.target.files[0]; }
 
-  addCourt() {
-    const formData = new FormData();
-    formData.append('name', this.newCourt.name);
-    formData.append('sportTypeId', this.newCourt.sportTypeId);
-    formData.append('pricePerHour', this.newCourt.pricePerHour.toString());
-    formData.append('description', this.newCourt.description);
-    if (this.selectedCourtImage) formData.append('imageFile', this.selectedCourtImage);
+  editCourt(court: any) {
+    this.isEditingCourt = true;
+    this.courtForm = { ...court };
+    this.selectedCourtImage = null;
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
 
-    this.http.post(`${this.apiUrl}/courts`, formData).subscribe({
-      next: () => {
-        alert('Thêm sân thành công!');
-        this.newCourt = { sportTypeId: '', name: '', pricePerHour: 0, description: '' };
-        this.selectedCourtImage = null;
-        this.loadData();
-      },
-      error: (err) => alert('Lỗi: ' + (err.error?.title || err.message))
-    });
+  cancelEditCourt() {
+    this.isEditingCourt = false;
+    this.courtForm = { id: 0, sportTypeId: '', name: '', pricePerHour: 0, description: '' };
+    this.selectedCourtImage = null;
+    const fileInput = document.getElementById('courtFileInput') as HTMLInputElement;
+    if (fileInput) fileInput.value = '';
+  }
+
+  saveCourt() {
+    const formData = new FormData();
+    formData.append('name', this.courtForm.name);
+    formData.append('sportTypeId', this.courtForm.sportTypeId.toString());
+    formData.append('pricePerHour', this.courtForm.pricePerHour.toString());
+    formData.append('description', this.courtForm.description || '');
+    
+    if (this.selectedCourtImage) {
+      formData.append('imageFile', this.selectedCourtImage);
+    }
+
+    if (this.isEditingCourt) {
+      this.http.put(`${this.apiUrl}/courts/${this.courtForm.id}`, formData).subscribe({
+        next: () => {
+          alert('Cập nhật sân thành công!');
+          this.cancelEditCourt();
+          this.loadData();
+        },
+        error: (err) => alert('Lỗi: ' + (err.error?.title || err.message))
+      });
+    } else {
+      this.http.post(`${this.apiUrl}/courts`, formData).subscribe({
+        next: () => {
+          alert('Thêm sân thành công!');
+          this.cancelEditCourt();
+          this.loadData();
+        },
+        error: (err) => alert('Lỗi: ' + (err.error?.title || err.message))
+      });
+    }
   }
 
   toggleCourt(court: any) {
     court.isActive = !court.isActive;
     this.courtService.update(court.id, court).subscribe();
   }
+  
+  deleteCourt(court: any) {
+    if (!confirm(`Bạn có chắc chắn muốn xóa sân: ${court.name}?`)) return;
+    this.courtService.delete(court.id).subscribe(() => this.loadData());
+  }
 
+  //booking
   setBookingFilter(status: number | null) { this.bookingStatusFilter = status; }
   confirmBooking(b: any) { b.status = 1; this.bookingService.update(b.id, b).subscribe(() => this.cdr.detectChanges()); }
   cancelBooking(b: any) {
@@ -114,6 +150,7 @@ export class AdminComponent implements OnInit {
     this.bookingService.update(b.id, b).subscribe(() => this.cdr.detectChanges());
   }
 
+  //user
   saveUser() {
     if (this.isEditingUser) {
       this.http.put(`${this.apiUrl}/users/${this.userForm.id}`, this.userForm).subscribe({
@@ -156,6 +193,7 @@ export class AdminComponent implements OnInit {
     this.http.delete(`${this.apiUrl}/users/${user.id}`).subscribe(() => this.loadUsers());
   }
 
+//news
   onNewsImageSelected(event: any) { this.selectedNewsImage = event.target.files[0]; }
 
   editNews(post: any) {

@@ -9,7 +9,6 @@ namespace SanTheThaoAPI.Controllers;
 public class CourtsController : ControllerBase
 {
     private readonly SanTheThaoContext _context;
-    // Bổ sung IWebHostEnvironment để lấy đường dẫn lưu ảnh
     private readonly IWebHostEnvironment _env;
 
     public CourtsController(SanTheThaoContext context, IWebHostEnvironment env)
@@ -31,13 +30,12 @@ public class CourtsController : ControllerBase
         return item == null ? NotFound() : item;
     }
 
-    // --- ĐÃ SỬA HÀM CREATE: Nhận [FromForm] và lưu ảnh ---
+    // them san
     [HttpPost]
     public async Task<ActionResult<Court>> Create([FromForm] CourtCreateDto input)
     {
         string? imageUrl = null;
 
-        // Nếu có ảnh gửi lên thì tiến hành lưu vật lý
         if (input.ImageFile != null && input.ImageFile.Length > 0)
         {
             var ext = Path.GetExtension(input.ImageFile.FileName).ToLower();
@@ -49,7 +47,7 @@ public class CourtsController : ControllerBase
             }
             
             var folder = Path.Combine(webRootPath, "images", "courts");
-            Directory.CreateDirectory(folder); // Tạo folder wwwroot/images/courts nếu chưa có
+            Directory.CreateDirectory(folder); 
             
             var fileName = $"court_{DateTime.Now.Ticks}{ext}";
             var path = Path.Combine(folder, fileName);
@@ -60,7 +58,6 @@ public class CourtsController : ControllerBase
             imageUrl = $"/images/courts/{fileName}";
         }
 
-        // Tạo dữ liệu sân mới để lưu DB
         var court = new Court
         {
             Name = input.Name,
@@ -68,7 +65,7 @@ public class CourtsController : ControllerBase
             PricePerHour = input.PricePerHour,
             Description = input.Description ?? "",
             IsActive = true,
-            ImageUrl = imageUrl // Lưu đường dẫn ảnh vào DB
+            ImageUrl = imageUrl 
         };
 
         _context.Courts.Add(court);
@@ -77,14 +74,55 @@ public class CourtsController : ControllerBase
     }
 
     [HttpPut("{id}")]
-    public async Task<IActionResult> Update(int id, Court item)
+    public async Task<IActionResult> Update(int id, [FromForm] CourtCreateDto input)
     {
-        if (id != item.Id) return BadRequest();
-        _context.Entry(item).State = EntityState.Modified;
+        var court = await _context.Courts.FindAsync(id);
+        if (court == null) return NotFound();
+
+        court.Name = input.Name;
+        court.SportTypeId = input.SportTypeId;
+        court.PricePerHour = input.PricePerHour;
+        court.Description = input.Description ?? "";
+
+        if (input.ImageFile != null && input.ImageFile.Length > 0)
+        {
+            var ext = Path.GetExtension(input.ImageFile.FileName).ToLower();
+            
+            var webRootPath = _env.WebRootPath;
+            if (string.IsNullOrWhiteSpace(webRootPath))
+            {
+                webRootPath = Path.Combine(_env.ContentRootPath, "wwwroot");
+            }
+            
+            var folder = Path.Combine(webRootPath, "images", "courts");
+            Directory.CreateDirectory(folder); 
+            
+            var fileName = $"court_{DateTime.Now.Ticks}{ext}";
+            var path = Path.Combine(folder, fileName);
+            
+            using var stream = System.IO.File.Create(path);
+            await input.ImageFile.CopyToAsync(stream);
+            
+            court.ImageUrl = $"/images/courts/{fileName}";
+        }
+
+        _context.Entry(court).State = EntityState.Modified;
         await _context.SaveChangesAsync();
-        return NoContent();
+        return Ok(court);
     }
 
+    [HttpPut("{id}/toggle")]
+    public async Task<IActionResult> ToggleCourt(int id)
+    {
+        var court = await _context.Courts.FindAsync(id);
+        if (court == null) return NotFound();
+        
+        court.IsActive = !court.IsActive; 
+        await _context.SaveChangesAsync();
+        return Ok(court);
+    }
+
+    // xoa san
     [HttpDelete("{id}")]
     public async Task<IActionResult> Delete(int id)
     {
@@ -96,14 +134,11 @@ public class CourtsController : ControllerBase
     }
 }
 
-// Bổ sung class DTO để nhận dữ liệu từ Angular
 public class CourtCreateDto
 {
     public string Name { get; set; } = string.Empty;
     public int SportTypeId { get; set; }
     public decimal PricePerHour { get; set; }
     public string? Description { get; set; }
-    
-    // IFormFile dùng để hứng file ảnh vật lý
     public IFormFile? ImageFile { get; set; } 
 }

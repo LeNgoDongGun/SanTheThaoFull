@@ -431,3 +431,4 @@ C:\Users\PC\Documents\SanTheThaoFull\SanTheThaoAPI\obj\Debug\net10.0\SanTheThaoA
 C:\Users\PC\Documents\SanTheThaoFull\SanTheThaoAPI\obj\Debug\net10.0\SanTheThaoAPI.genruntimeconfig.cache
 C:\Users\PC\Documents\SanTheThaoFull\SanTheThaoAPI\obj\Debug\net10.0\ref\SanTheThaoAPI.dll
 C:\Users\PC\Documents\SanTheThaoFull\SanTheThaoAPI\bin\Debug\net10.0\SanTheThaoAPI.staticwebassets.runtime.json
+D:\angular_cuoiky\SanTheThaoAPI\bin\Debug\net10.0\SanTheThaoAPI.staticwebassets.runtime.json

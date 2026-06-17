@@ -23,16 +23,23 @@ export class BookingService {
     return this.http.get(this.apiUrl);
   }
 
+
+
+
+
+  // phần hỗ trợ cho momo
   // Bắn chuẩn vào endpoint /create của Backend
   create(booking: BookingRequest): Observable<any> {
     return this.http.post(`${this.apiUrl}/create`, booking);
   }
 
-  delete(id: number): Observable<any> {
-    return this.http.delete(`${this.apiUrl}/${id}`);
-  }
-
   update(id: number, booking: any): Observable<any> {
     return this.http.put(`${this.apiUrl}/${id}`, booking);
   }
+
+  // thanh toán thất bị thì xóa xổ đơn hàng
+  delete(id: number): Observable<any> {
+      return this.http.delete(`${this.apiUrl}/${id}`);
+  }
+
 }

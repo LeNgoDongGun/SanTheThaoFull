@@ -87,6 +87,7 @@ export class BookingFormComponent implements OnInit {
       paymentMethod: this.bookingData.paymentMethod
     };
 
+     // tạo đơn hàng
     this.bookingService.create(payload).subscribe({
       next: (res: any) => {
         this.loading = false;
@@ -94,6 +95,7 @@ export class BookingFormComponent implements OnInit {
         // LUỒNG 1: Chọn MoMo và Backend trả về link thanh toán (Ví dụ: res.payUrl hoặc res.data.payUrl)
         const payUrl = res?.payUrl || res?.data?.payUrl;
         if (payload.paymentMethod === 'Momo' && payUrl) {
+          //chuyển người dùng sang trang thanh toán
           window.location.href = payUrl; 
         } 
         // LUỒNG 2: Tiền mặt

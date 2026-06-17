@@ -56,7 +56,7 @@ public class AuthController(SanTheThaoContext context) : ControllerBase
 
 
 
-    [HttpGet("callback")]
+    [HttpGet("callback")] // cấu hình url
     public async Task<IActionResult> SocialCallback()
     {
         // Yêu cầu hệ thống giải mã Cookie tạm thời do Middleware vừa đóng gói để trích xuất thông tin định danh (Email, Họ tên) ra xử lý nghiệp vụ

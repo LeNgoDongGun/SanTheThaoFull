@@ -18,10 +18,11 @@ export class BookingResultComponent implements OnInit {
   loading = true;
 
   ngOnInit() {
-    // 1. Kiểm tra xem đây là luồng MoMo trả về hay luồng Tiền mặt chuyển sang
+    // Kiểm tra xem đây là luồng MoMo trả về hay luồng Tiền mặt chuyển sang
     this.route.queryParams.subscribe(params => {
       
-      // THƯƠNG LƯỢNG LUỒNG 1: MoMo trả kết quả về qua URL định dạng của họ
+      //  NẾU LÀ TỪ MOMO chuyển sang thì Check tham số resultCode từ MoMo gửi về để phân biệt thành công (bằng 0) hay thất bại.
+      // momo chuyển tiếp sang trang này kèm query string 
       if (params['resultCode'] !== undefined) {
         this.paymentMethod = 'Momo';
         const resultCode = Number(params['resultCode']);
@@ -35,12 +36,11 @@ export class BookingResultComponent implements OnInit {
           this.message = params['message'] || 'Giao dịch bị hủy hoặc thanh toán thất bại.';
         }
       } 
-      
-      // THƯƠNG LƯỢNG LUỒNG 2: Tiền mặt chuyển hướng nội bộ từ booking-form sang
+      //NGược lại chuyển trực tiếp từ trang booking
       else {
-        this.paymentMethod = params['method'] || 'Cash';
-        this.isSuccess = params['status'] === 'success';
-        this.message = this.isSuccess 
+        this.paymentMethod = params['method'] || 'Cash'; // kiểm tra xem có phương thức truyền vào k, nếu k thì gắn là cash
+        this.isSuccess = params['status'] === 'success'; // Kiểm tra tham số status trên URL có trùng khớp hoàn toàn với chuỗi 'success' hay không
+        this.message = this.isSuccess // nếu đúng thì trả về message hiện lên html
           ? 'Đặt sân thành công! Vui lòng thanh toán tiền mặt tại quầy khi đến nhận sân.' 
           : 'Đặt sân thất bại. Vui lòng kiểm tra lại khung giờ.';
       }

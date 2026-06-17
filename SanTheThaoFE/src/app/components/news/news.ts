@@ -42,8 +42,8 @@ import { NewsService } from '../../services/news';
              style="background:white;border-radius:12px;overflow:hidden;box-shadow:0 1px 4px rgba(0,0,0,0.08)">
 
           <div style="height:160px;background:linear-gradient(135deg,#e0e7ff,#c7d2fe);overflow:hidden;display:flex;align-items:center;justify-content:center">
-            <img *ngIf="post.thumbnailUrl" [src]="post.thumbnailUrl" [alt]="post.title"
-                 style="width:100%;height:100%;object-fit:cover" (error)="post.thumbnailUrl=null">
+            <img *ngIf="post.thumbnailUrl" [src]="'http://localhost:5135' + post.thumbnailUrl" [alt]="post.title"
+                style="width:100%;height:100%;object-fit:cover" (error)="post.thumbnailUrl=null">
             <span *ngIf="!post.thumbnailUrl" style="font-size:3rem">📰</span>
           </div>
 

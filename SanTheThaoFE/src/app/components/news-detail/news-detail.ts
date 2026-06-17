@@ -43,8 +43,8 @@ import { NewsService } from '../../services/news';
         <!-- Ảnh -->
         <div *ngIf="post.thumbnailUrl"
              style="border-radius:12px;overflow:hidden;margin-bottom:28px;max-height:400px">
-          <img [src]="post.thumbnailUrl" [alt]="post.title"
-               style="width:100%;object-fit:cover" (error)="post.thumbnailUrl=null">
+          <img [src]="'http://localhost:5135' + post.thumbnailUrl" [alt]="post.title"
+              style="width:100%;object-fit:cover" (error)="post.thumbnailUrl=null">
         </div>
 
         <!-- Nội dung -->

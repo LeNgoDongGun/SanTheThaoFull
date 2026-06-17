@@ -6,10 +6,11 @@ using Microsoft.AspNetCore.Authentication;
 using Microsoft.Extensions.DependencyInjection;
 // THÊM CHÍNH XÁC DÒNG NÀY VÀO ĐẦU FILE
 using AspNet.Security.OAuth.GitHub;
+// THÊM THƯ VIỆN NÀY ĐỂ XỬ LÝ ĐỌC FILE VẬT LÝ TỪ WWWROOT
+using Microsoft.Extensions.FileProviders;
+using System.IO;
 
 var builder = WebApplication.CreateBuilder(args);
-
-
 
 // THÊM DÒNG NÀY VÀO ĐÂY ĐỂ ĐĂNG KÝ IHttpClientFactory
 builder.Services.AddHttpClient();
@@ -77,7 +78,6 @@ builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
 
-
 // Cấu hình HTTP request pipeline.
 app.UseSwagger();
 app.UseSwaggerUI();
@@ -85,8 +85,21 @@ app.UseSwaggerUI();
 // CHUYỂN DÒNG NÀY LÊN ĐÂY
 app.UseHttpsRedirection();
 
-
 app.UseCors("AllowAngular");
+
+// --- BẮT ĐẦU: FIX TRIỆT ĐỂ LỖI 404 ẢNH BẰNG PHYSICAL FILE PROVIDER ---
+var wwwrootPath = Path.Combine(app.Environment.ContentRootPath, "wwwroot");
+if (!Directory.Exists(wwwrootPath))
+{
+    Directory.CreateDirectory(wwwrootPath);
+}
+
+app.UseStaticFiles(new StaticFileOptions
+{
+    FileProvider = new PhysicalFileProvider(wwwrootPath),
+    RequestPath = "" // Trỏ thẳng vào gốc để khớp với link /images/news/... bên Angular
+});
+// --- KẾT THÚC ---
 
 // THÊM MỚI: Bắt buộc phải đặt UseAuthentication trước UseAuthorization
 app.UseAuthentication(); 

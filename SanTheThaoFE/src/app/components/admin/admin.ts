@@ -2,186 +2,109 @@ import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
+import { HttpClient } from '@angular/common/http';
+
+import { AuthService } from '../../services/auth';
 import { CourtService } from '../../services/court';
 import { BookingService } from '../../services/booking';
-import { AuthService } from '../../services/auth';
+import { SporttypeService } from '../../services/sporttype';
+import { NewsService } from '../../services/news';
 
 @Component({
   selector: 'app-admin',
   standalone: true,
   imports: [CommonModule, FormsModule, RouterLink],
-  template: `
-    <div style="max-width:1100px;margin:auto;padding:32px 24px">
-
-      <!-- Kiểm tra quyền -->
-      <div *ngIf="!auth.isAdmin()"
-           style="text-align:center;padding:60px;color:#64748b">
-        <div style="font-size:3rem">🔒</div>
-        <p>Bạn không có quyền truy cập trang này.</p>
-        <a routerLink="/" style="color:#3b82f6;font-weight:600">← Về trang chủ</a>
-      </div>
-
-      <ng-container *ngIf="auth.isAdmin()">
-        <h2 style="font-weight:700;margin-bottom:24px">⚙️ Admin Dashboard</h2>
-
-        <!-- Tabs -->
-        <div style="display:flex;gap:4px;background:#f1f5f9;padding:4px;border-radius:10px;margin-bottom:28px;width:fit-content">
-          <button *ngFor="let tab of tabs" (click)="activeTab = tab.key"
-                  [style.background]="activeTab === tab.key ? 'white' : 'transparent'"
-                  [style.color]="activeTab === tab.key ? '#1e293b' : '#64748b'"
-                  [style.box-shadow]="activeTab === tab.key ? '0 1px 4px rgba(0,0,0,0.1)' : 'none'"
-                  style="padding:8px 20px;border:none;border-radius:8px;cursor:pointer;font-size:0.875rem;font-weight:500">
-            {{ tab.label }}
-          </button>
-        </div>
-
-        <!-- Tab: Thống kê -->
-        <div *ngIf="activeTab === 'dashboard'">
-          <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:16px;margin-bottom:32px">
-            <div style="background:white;border-radius:12px;padding:24px;text-align:center;box-shadow:0 1px 4px rgba(0,0,0,0.08)">
-              <div style="font-size:2.5rem">🏟️</div>
-              <div style="font-size:2rem;font-weight:800;margin:8px 0">{{ courts.length }}</div>
-              <div style="color:#64748b;font-size:0.875rem">Tổng sân</div>
-            </div>
-            <div style="background:white;border-radius:12px;padding:24px;text-align:center;box-shadow:0 1px 4px rgba(0,0,0,0.08)">
-              <div style="font-size:2.5rem">📋</div>
-              <div style="font-size:2rem;font-weight:800;margin:8px 0">{{ bookings.length }}</div>
-              <div style="color:#64748b;font-size:0.875rem">Đơn đặt</div>
-            </div>
-            <div style="background:white;border-radius:12px;padding:24px;text-align:center;box-shadow:0 1px 4px rgba(0,0,0,0.08)">
-              <div style="font-size:2.5rem">⏳</div>
-              <div style="font-size:2rem;font-weight:800;margin:8px 0">{{ pendingBookings }}</div>
-              <div style="color:#64748b;font-size:0.875rem">Chờ xác nhận</div>
-            </div>
-            <div style="background:white;border-radius:12px;padding:24px;text-align:center;box-shadow:0 1px 4px rgba(0,0,0,0.08)">
-              <div style="font-size:2.5rem">💰</div>
-              <div style="font-size:1.4rem;font-weight:800;margin:8px 0">{{ totalRevenue | number }}đ</div>
-              <div style="color:#64748b;font-size:0.875rem">Doanh thu</div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Tab: Quản lý sân -->
-        <div *ngIf="activeTab === 'courts'">
-          <h3 style="font-weight:700;margin-bottom:16px">🏟️ Danh sách sân</h3>
-          <div style="background:white;border-radius:12px;overflow:hidden;box-shadow:0 1px 4px rgba(0,0,0,0.08)">
-            <table style="width:100%;border-collapse:collapse">
-              <thead>
-                <tr style="background:#f8fafc;font-size:0.85rem;color:#64748b">
-                  <th style="padding:12px 16px;text-align:left">Tên sân</th>
-                  <th style="padding:12px 16px;text-align:left">Môn</th>
-                  <th style="padding:12px 16px;text-align:left">Giá/giờ</th>
-                  <th style="padding:12px 16px;text-align:center">Trạng thái</th>
-                  <th style="padding:12px 16px;text-align:center">Thao tác</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr *ngFor="let c of courts"
-                    style="border-top:1px solid #f1f5f9;font-size:0.875rem">
-                  <td style="padding:12px 16px;font-weight:600">{{ c.name }}</td>
-                  <td style="padding:12px 16px;color:#64748b">{{ c.sportType?.name }}</td>
-                  <td style="padding:12px 16px;color:#3b82f6;font-weight:600">{{ c.pricePerHour | number }}đ</td>
-                  <td style="padding:12px 16px;text-align:center">
-                    <span [style.background]="c.isActive ? '#dcfce7' : '#fee2e2'"
-                          [style.color]="c.isActive ? '#16a34a' : '#dc2626'"
-                          style="padding:4px 12px;border-radius:12px;font-size:0.78rem;font-weight:600">
-                      {{ c.isActive ? 'Hoạt động' : 'Tạm đóng' }}
-                    </span>
-                  </td>
-                  <td style="padding:12px 16px;text-align:center">
-                    <button (click)="toggleCourt(c)"
-                            style="background:transparent;border:1px solid #e2e8f0;padding:5px 12px;border-radius:6px;cursor:pointer;font-size:0.8rem;color:#475569">
-                      {{ c.isActive ? 'Tạm đóng' : 'Mở lại' }}
-                    </button>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </div>
-
-        <!-- Tab: Quản lý đơn -->
-        <div *ngIf="activeTab === 'bookings'">
-          <h3 style="font-weight:700;margin-bottom:16px">📋 Danh sách đơn đặt sân</h3>
-          <div style="background:white;border-radius:12px;overflow:hidden;box-shadow:0 1px 4px rgba(0,0,0,0.08)">
-            <table style="width:100%;border-collapse:collapse">
-              <thead>
-                <tr style="background:#f8fafc;font-size:0.85rem;color:#64748b">
-                  <th style="padding:12px 16px;text-align:left">Sân</th>
-                  <th style="padding:12px 16px;text-align:left">Ngày</th>
-                  <th style="padding:12px 16px;text-align:left">Giờ</th>
-                  <th style="padding:12px 16px;text-align:left">Tiền</th>
-                  <th style="padding:12px 16px;text-align:center">Trạng thái</th>
-                  <th style="padding:12px 16px;text-align:center">Thao tác</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr *ngFor="let b of bookings"
-                    style="border-top:1px solid #f1f5f9;font-size:0.875rem">
-                  <td style="padding:12px 16px;font-weight:600">{{ b.court?.name || '#' + b.courtId }}</td>
-                  <td style="padding:12px 16px;color:#64748b">{{ b.bookingDate }}</td>
-                  <td style="padding:12px 16px;color:#64748b">{{ b.startTime }} – {{ b.endTime }}</td>
-                  <td style="padding:12px 16px;color:#3b82f6;font-weight:600">{{ b.totalPrice | number }}đ</td>
-                  <td style="padding:12px 16px;text-align:center">
-                    <span [style.background]="statusColor(b.status).bg"
-                          [style.color]="statusColor(b.status).text"
-                          style="padding:4px 12px;border-radius:12px;font-size:0.78rem;font-weight:600">
-                      {{ statusLabel(b.status) }}
-                    </span>
-                  </td>
-                  <td style="padding:12px 16px;text-align:center;display:flex;gap:6px;justify-content:center">
-                    <button *ngIf="b.status === 0" (click)="confirmBooking(b)"
-                            style="background:#dcfce7;border:none;color:#16a34a;padding:5px 10px;border-radius:6px;cursor:pointer;font-size:0.8rem;font-weight:600">
-                      Xác nhận
-                    </button>
-                    <button *ngIf="b.status !== 2" (click)="cancelBooking(b)"
-                            style="background:#fee2e2;border:none;color:#dc2626;padding:5px 10px;border-radius:6px;cursor:pointer;font-size:0.8rem;font-weight:600">
-                      Hủy
-                    </button>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </div>
-
-      </ng-container>
-    </div>
-  `
+  templateUrl: './admin.html'
 })
 export class AdminComponent implements OnInit {
-  courts: any[] = [];
-  bookings: any[] = [];
+  private apiUrl = 'http://localhost:5135/api'; 
+
   activeTab = 'dashboard';
   tabs = [
     { key: 'dashboard', label: '📊 Thống kê' },
     { key: 'courts', label: '🏟️ Sân' },
-    { key: 'bookings', label: '📋 Đơn đặt' }
+    { key: 'bookings', label: '📋 Đơn đặt' },
+    { key: 'users', label: '👥 Người dùng' },
+    { key: 'news', label: '📰 Tin tức' }
   ];
 
+  courts: any[] = [];
+  bookings: any[] = [];
+  users: any[] = [];
+  news: any[] = [];
+  sportTypes: any[] = [];
+
+  // STATE SÂN
+  newCourt: any = { sportTypeId: '', name: '', pricePerHour: 0, description: '' };
+  selectedCourtImage: File | null = null;
+
+  // STATE TIN TỨC
+  newNews: any = { title: '', category: 'Bóng đá', summary: '', content: '' };
+  selectedNewsImage: File | null = null;
+
+  // BỘ LỌC ĐƠN ĐẶT
+  bookingStatusFilter: number | null = null;
+
+  // TÍNH NĂNG MỚI: STATE NGƯỜI DÙNG
+  isEditingUser = false;
+  userForm: any = { fullName: '', email: '', phoneNumber: '', password: '', role: 'Customer', isActive: true };
+
+  // THỐNG KÊ (GETTERS)
   get pendingBookings() { return this.bookings.filter(b => b.status === 0).length; }
   get totalRevenue() { return this.bookings.filter(b => b.status === 1).reduce((s, b) => s + b.totalPrice, 0); }
+  get filteredBookings() {
+    if (this.bookingStatusFilter === null) return this.bookings;
+    return this.bookings.filter(b => b.status === this.bookingStatusFilter);
+  }
 
   constructor(
     public auth: AuthService,
     private courtService: CourtService,
     private bookingService: BookingService,
+    private sportTypeService: SporttypeService,
+    private newsService: NewsService,
+    private http: HttpClient,
     private cdr: ChangeDetectorRef
   ) { }
 
   ngOnInit() {
     if (!this.auth.isAdmin()) return;
-    this.courtService.getAll().subscribe({
-      next: (res: any) => {
-        this.courts = Array.isArray(res) ? res : (res.data || []);
-        this.cdr.detectChanges();
-      }
-    });
-    this.bookingService.getAll().subscribe({
-      next: (res: any) => {
-        this.bookings = Array.isArray(res) ? res : (res.data || []);
-        this.cdr.detectChanges();
-      }
+    this.loadData();
+  }
+
+  loadData() {
+    this.courtService.getAll().subscribe((res: any) => this.courts = Array.isArray(res) ? res : (res.data || []));
+    this.bookingService.getAll().subscribe((res: any) => this.bookings = Array.isArray(res) ? res : (res.data || []));
+    this.sportTypeService.getAll().subscribe((res: any) => this.sportTypes = Array.isArray(res) ? res : (res.data || []));
+    this.newsService.getAll().subscribe((res: any) => this.news = Array.isArray(res) ? res : (res.data || []));
+    this.loadUsers();
+  }
+
+  loadUsers() {
+    this.http.get<any[]>(`${this.apiUrl}/users`).subscribe(res => this.users = Array.isArray(res) ? res : (res as any).data || []);
+  }
+
+  // ==========================================
+  // LOGIC SÂN
+  // ==========================================
+  onCourtImageSelected(event: any) { this.selectedCourtImage = event.target.files[0]; }
+
+  addCourt() {
+    const formData = new FormData();
+    formData.append('name', this.newCourt.name);
+    formData.append('sportTypeId', this.newCourt.sportTypeId);
+    formData.append('pricePerHour', this.newCourt.pricePerHour.toString());
+    formData.append('description', this.newCourt.description);
+    if (this.selectedCourtImage) formData.append('imageFile', this.selectedCourtImage);
+
+    this.http.post(`${this.apiUrl}/courts`, formData).subscribe({
+      next: () => {
+        alert('Thêm sân thành công!');
+        this.newCourt = { sportTypeId: '', name: '', pricePerHour: 0, description: '' };
+        this.selectedCourtImage = null;
+        this.loadData();
+      },
+      error: (err) => alert('Lỗi: ' + (err.error?.title || err.message))
     });
   }
 
@@ -190,20 +113,135 @@ export class AdminComponent implements OnInit {
     this.courtService.update(court.id, court).subscribe();
   }
 
-  confirmBooking(b: any) {
-    b.status = 1;
-    this.bookingService.update(b.id, b).subscribe();
-    this.cdr.detectChanges();
-  }
-
+  // ==========================================
+  // LOGIC ĐƠN ĐẶT
+  // ==========================================
+  setBookingFilter(status: number | null) { this.bookingStatusFilter = status; }
+  confirmBooking(b: any) { b.status = 1; this.bookingService.update(b.id, b).subscribe(() => this.cdr.detectChanges()); }
   cancelBooking(b: any) {
     if (!confirm('Hủy đơn này?')) return;
     b.status = 2;
-    this.bookingService.update(b.id, b).subscribe();
-    this.cdr.detectChanges();
+    this.bookingService.update(b.id, b).subscribe(() => this.cdr.detectChanges());
   }
 
-  statusLabel(s: number) { return ['⏳ Chờ', '✅ Xác nhận', '❌ Đã hủy'][s] || '?'; }
+  // ==========================================
+  // TÍNH NĂNG MỚI: LOGIC NGƯỜI DÙNG
+  // ==========================================
+  saveUser() {
+    if (this.isEditingUser) {
+      // Gọi API Update (Put)
+      this.http.put(`${this.apiUrl}/users/${this.userForm.id}`, this.userForm).subscribe({
+        next: () => {
+          alert('Cập nhật tài khoản thành công!');
+          this.cancelEditUser();
+          this.loadUsers();
+        },
+        error: (err) => alert('Lỗi cập nhật: ' + (err.error?.title || err.message))
+      });
+    } else {
+      // Gọi API Đăng ký để thêm người mới
+      this.auth.register(this.userForm).subscribe({
+        next: () => {
+          alert('Thêm người dùng thành công!');
+          this.cancelEditUser();
+          this.loadUsers();
+        },
+        error: (err) => alert('Lỗi thêm user: ' + (err.error?.title || err.message))
+      });
+    }
+  }
+
+  editUser(user: any) {
+    this.isEditingUser = true;
+    this.userForm = { ...user }; // Copy dữ liệu lên form
+  }
+
+  cancelEditUser() {
+    this.isEditingUser = false;
+    this.userForm = { fullName: '', email: '', phoneNumber: '', password: '', role: 'Customer', isActive: true };
+  }
+
+  toggleUser(user: any) {
+    user.isActive = !user.isActive;
+    this.http.put(`${this.apiUrl}/users/${user.id}`, user).subscribe();
+  }
+
+  deleteUser(user: any) {
+    if (!confirm(`Xóa tài khoản ${user.fullName}?`)) return;
+    this.http.delete(`${this.apiUrl}/users/${user.id}`).subscribe(() => this.loadUsers());
+  }
+
+  // ==========================================
+  // ĐÃ FIX: LOGIC TIN TỨC 
+  // ==========================================
+  onNewsImageSelected(event: any) { this.selectedNewsImage = event.target.files[0]; }
+
+  addNews() {
+    // 1. Validate bắt buộc
+    if (!this.newNews.title || !this.newNews.content || !this.newNews.summary) {
+      alert('Vui lòng nhập đầy đủ Tiêu đề, Tóm tắt và Nội dung!');
+      return;
+    }
+
+    // 2. Tự động tạo Slug chuẩn từ Tiêu đề
+    const slug = this.newNews.title.toLowerCase()
+      .normalize('NFD').replace(/[\u0300-\u036f]/g, '') // Xóa dấu tiếng Việt
+      .replace(/đ/g, 'd').replace(/Đ/g, 'D')
+      .replace(/ /g, '-')
+      .replace(/[^\w-]+/g, '');
+
+    // 3. Đóng gói dữ liệu dạng FormData (multipart/form-data)
+    const formData = new FormData();
+    formData.append('title', this.newNews.title);
+    formData.append('category', this.newNews.category);
+    formData.append('summary', this.newNews.summary);
+    formData.append('content', this.newNews.content);
+    formData.append('slug', slug);
+    
+    // Gửi ID tác giả (ép sang string)
+    const authorId = this.auth.getUser()?.id || 1; 
+    formData.append('authorId', authorId.toString());
+
+    // Đính kèm File ảnh (Quan trọng: Tên 'thumbnailFile' phải khớp với DTO bên C#)
+    if (this.selectedNewsImage) {
+      formData.append('thumbnailFile', this.selectedNewsImage);
+    }
+
+    // 4. Gửi lên API
+    this.http.post(`${this.apiUrl}/newsposts`, formData).subscribe({
+      next: () => {
+        alert('Đăng bài thành công!');
+        // Reset form
+        this.newNews = { title: '', category: 'Bóng đá', summary: '', content: '' };
+        this.selectedNewsImage = null;
+        
+        // Reset luôn thẻ <input type="file"> trên giao diện (nếu cần)
+        const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement;
+        if (fileInput) fileInput.value = '';
+
+        this.loadData();
+      },
+      error: (err) => {
+        console.error("Lỗi đăng bài:", err);
+        alert('Lỗi đăng bài: ' + (err.error?.title || err.message || 'Lỗi hệ thống'));
+      }
+    });
+  }
+
+  toggleNews(post: any) {
+    post.isPublished = !post.isPublished;
+    this.http.put(`${this.apiUrl}/newsposts/${post.id}`, post).subscribe();
+  }
+
+  deleteNews(post: any) {
+    if (!confirm(`Xóa bài viết: ${post.title}?`)) return;
+    this.http.delete(`${this.apiUrl}/newsposts/${post.id}`).subscribe(() => this.loadData());
+  }
+
+  // ==========================================
+  // UI HELPERS
+  // ==========================================
+  statusLabel(s: number) { return ['⏳ Chờ xác nhận', '✅ Đã xác nhận', '❌ Đã hủy'][s] || '?'; }
   statusColor(s: number) {
     return [
       { bg: '#fef3c7', text: '#d97706' },

@@ -37,4 +37,46 @@ public class UsersController : ControllerBase
         await _context.SaveChangesAsync();
         return Ok(new { user.Id, user.IsActive });
     }
+
+    // --- THÊM MỚI BẮT ĐẦU TỪ ĐÂY ---
+
+    // 1. Hàm cập nhật thông tin User (Sửa SĐT, Họ tên, Role)
+    [HttpPut("{id}")]
+    public async Task<IActionResult> UpdateUser(int id, User updatedUser)
+    {
+        // Kiểm tra xem id trên đường dẫn có khớp với id trong dữ liệu gửi lên không
+        if (id != updatedUser.Id) return BadRequest();
+
+        var user = await _context.Users.FindAsync(id);
+        if (user == null) return NotFound();
+
+        // Chỉ cập nhật các trường được phép thay đổi
+        user.FullName = updatedUser.FullName;
+        user.PhoneNumber = updatedUser.PhoneNumber;
+        user.Role = updatedUser.Role;
+
+        // Lưu ý: Thường thì Email và Password sẽ không cho đổi ở hàm này để bảo mật
+        // (Trừ khi Admin muốn tự reset pass cho user)
+
+        await _context.SaveChangesAsync();
+        return Ok(user);
+    }
+
+    // 2. Hàm xoá User
+    [HttpDelete("{id}")]
+    public async Task<IActionResult> DeleteUser(int id)
+    {
+        var user = await _context.Users.FindAsync(id);
+        if (user == null) return NotFound();
+
+        // Chặn không cho xóa tài khoản Admin để đề phòng lỗi tự huỷ
+        if (user.Role == "Admin") 
+        {
+            return BadRequest(new { title = "Không thể xóa tài khoản Admin." });
+        }
+
+        _context.Users.Remove(user);
+        await _context.SaveChangesAsync();
+        return Ok();
+    }
 }

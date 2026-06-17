@@ -251,35 +251,41 @@
 
     <div *ngIf="activeTab === 'news'">
       <div style="background:white;border-radius:12px;padding:20px;box-shadow:0 1px 4px rgba(0,0,0,0.08);margin-bottom:24px">
-        <h6 style="font-weight:700;margin:0 0 16px 0">✍️ Đăng bài viết mới</h6>
-        <form (ngSubmit)="addNews()" style="display:flex;flex-direction:column;gap:12px">
+        <h6 style="font-weight:700;margin:0 0 16px 0">{{ isEditingNews ? '✏️ Chỉnh sửa bài viết' : '✍️ Đăng bài viết mới' }}</h6>
+        <form (ngSubmit)="saveNews()" style="display:flex;flex-direction:column;gap:12px">
           <div style="display:flex;gap:12px;flex-wrap:wrap">
             <div style="flex:2;min-width:200px">
               <label style="font-size:0.8rem;font-weight:600;display:block;margin-bottom:4px">Tiêu đề <span style="color:red">*</span></label>
-              <input type="text" [(ngModel)]="newNews.title" name="title" style="width:100%;padding:8px;border:1px solid #cbd5e1;border-radius:6px">
+              <input type="text" [(ngModel)]="newsForm.title" name="title" style="width:100%;padding:8px;border:1px solid #cbd5e1;border-radius:6px">
             </div>
             <div style="flex:1;min-width:120px">
               <label style="font-size:0.8rem;font-weight:600;display:block;margin-bottom:4px">Danh mục</label>
-              <select [(ngModel)]="newNews.category" name="category" style="width:100%;padding:8px;border:1px solid #cbd5e1;border-radius:6px">
+              <select [(ngModel)]="newsForm.category" name="category" style="width:100%;padding:8px;border:1px solid #cbd5e1;border-radius:6px">
                 <option>Bóng đá</option><option>Cầu lông</option><option>Bóng chuyền</option>
                 <option>Bóng rổ</option><option>Pickleball</option><option>Tổng hợp</option>
               </select>
             </div>
             <div style="flex:1.5;min-width:180px">
               <label style="font-size:0.8rem;font-weight:600;display:block;margin-bottom:4px">Ảnh thumbnail</label>
-              <input type="file" (change)="onNewsImageSelected($event)" accept="image/*" style="width:100%;padding:5px;border:1px solid #cbd5e1;border-radius:6px">
+              <input type="file" id="newsFileInput" (change)="onNewsImageSelected($event)" accept="image/*" style="width:100%;padding:5px;border:1px solid #cbd5e1;border-radius:6px">
+              <div *ngIf="isEditingNews" style="font-size:0.75rem;color:#64748b;margin-top:4px">Bỏ trống nếu muốn giữ ảnh cũ</div>
             </div>
           </div>
           <div>
-            <label style="font-size:0.8rem;font-weight:600;display:block;margin-bottom:4px">Tóm tắt</label>
-            <input type="text" [(ngModel)]="newNews.summary" name="summary" style="width:100%;padding:8px;border:1px solid #cbd5e1;border-radius:6px">
+            <label style="font-size:0.8rem;font-weight:600;display:block;margin-bottom:4px">Tóm tắt <span style="color:red">*</span></label>
+            <input type="text" [(ngModel)]="newsForm.summary" name="summary" style="width:100%;padding:8px;border:1px solid #cbd5e1;border-radius:6px">
           </div>
           <div>
             <label style="font-size:0.8rem;font-weight:600;display:block;margin-bottom:4px">Nội dung <span style="color:red">*</span></label>
-            <textarea [(ngModel)]="newNews.content" name="content" rows="4" style="width:100%;padding:8px;border:1px solid #cbd5e1;border-radius:6px"></textarea>
+            <textarea [(ngModel)]="newsForm.content" name="content" rows="4" style="width:100%;padding:8px;border:1px solid #cbd5e1;border-radius:6px"></textarea>
           </div>
-          <div>
-            <button type="submit" style="padding:9px 24px;background:#3b82f6;color:white;border:none;border-radius:6px;font-weight:600;cursor:pointer">Đăng bài</button>
+          <div style="display:flex;gap:8px">
+            <button type="submit" style="padding:9px 24px;background:#3b82f6;color:white;border:none;border-radius:6px;font-weight:600;cursor:pointer">
+              {{ isEditingNews ? 'Lưu thay đổi' : 'Đăng bài' }}
+            </button>
+            <button *ngIf="isEditingNews" type="button" (click)="cancelEditNews()" style="padding:9px 24px;background:#f1f5f9;color:#64748b;border:1px solid #cbd5e1;border-radius:6px;font-weight:600;cursor:pointer">
+              Hủy
+            </button>
           </div>
         </form>
       </div>
@@ -305,13 +311,16 @@
             <hr style="border:none;border-top:1px solid #f1f5f9;margin:12px 0">
             
             <div style="display:flex;justify-content:space-between;align-items:center">
-              <button (click)="toggleNews(post)" 
-                      [style.color]="post.isPublished ? '#64748b' : '#16a34a'"
-                      [style.border-color]="post.isPublished ? '#cbd5e1' : '#86efac'"
-                      style="padding:4px 12px;background:transparent;border:1px solid;border-radius:6px;cursor:pointer;font-size:0.8rem;font-weight:600">
-                {{ post.isPublished ? 'Ẩn' : 'Hiện' }}
-              </button>
-              <button (click)="deleteNews(post)" style="background:transparent;border:1px solid #fca5a5;color:#ef4444;padding:4px 12px;border-radius:6px;cursor:pointer;font-size:0.8rem">🗑 Xóa</button>
+              <div>
+                <button (click)="toggleNews(post)" 
+                        [style.color]="post.isPublished ? '#64748b' : '#16a34a'"
+                        [style.border-color]="post.isPublished ? '#cbd5e1' : '#86efac'"
+                        style="padding:4px 12px;background:transparent;border:1px solid;border-radius:6px;cursor:pointer;font-size:0.8rem;font-weight:600;margin-right:4px">
+                  {{ post.isPublished ? 'Ẩn' : 'Hiện' }}
+                </button>
+                <button (click)="editNews(post)" style="background:transparent;border:1px solid #cbd5e1;color:#3b82f6;padding:4px 12px;border-radius:6px;cursor:pointer;font-size:0.8rem;font-weight:600">✏️ Sửa</button>
+              </div>
+              <button (click)="deleteNews(post)" style="background:transparent;border:1px solid #fca5a5;color:#ef4444;padding:4px 12px;border-radius:6px;cursor:pointer;font-size:0.8rem">🗑</button>
             </div>
           </div>
         </div>

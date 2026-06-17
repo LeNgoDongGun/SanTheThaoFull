@@ -9,7 +9,6 @@ namespace SanTheThaoAPI.Controllers;
 public class NewsPostsController : ControllerBase
 {
     private readonly SanTheThaoContext _context;
-    // Bổ sung IWebHostEnvironment để lấy đường dẫn thư mục wwwroot lưu ảnh
     private readonly IWebHostEnvironment _env;
 
     public NewsPostsController(SanTheThaoContext context, IWebHostEnvironment env)
@@ -35,27 +34,23 @@ public class NewsPostsController : ControllerBase
         return post == null ? NotFound() : Ok(post);
     }
 
-    // SỬA LẠI HÀM CREATE: Dùng [FromForm] và DTO để nhận File
     [HttpPost]
     public async Task<IActionResult> Create([FromForm] NewsPostCreateDto input)
     {
         string? thumbnailUrl = null;
 
-        // Nếu có ảnh gửi lên thì tiến hành lưu vật lý
         if (input.ThumbnailFile != null && input.ThumbnailFile.Length > 0)
         {
             var ext = Path.GetExtension(input.ThumbnailFile.FileName).ToLower();
             
-            // Khắc phục lỗi WebRootPath bị null
             var webRootPath = _env.WebRootPath;
             if (string.IsNullOrWhiteSpace(webRootPath))
             {
-                // Nếu null, tự động lấy thư mục gốc của project và nối thêm "wwwroot"
                 webRootPath = Path.Combine(_env.ContentRootPath, "wwwroot");
             }
             
             var folder = Path.Combine(webRootPath, "images", "news");
-            Directory.CreateDirectory(folder); // Hệ thống sẽ tự động tạo chuỗi thư mục wwwroot/images/news nếu chưa có
+            Directory.CreateDirectory(folder); 
             
             var fileName = $"news_{DateTime.Now.Ticks}{ext}";
             var path = Path.Combine(folder, fileName);
@@ -66,7 +61,6 @@ public class NewsPostsController : ControllerBase
             thumbnailUrl = $"/images/news/{fileName}";
         }
 
-        // Khởi tạo bài viết để lưu vào Database
         var post = new NewsPost
         {
             Title = input.Title,
@@ -77,7 +71,7 @@ public class NewsPostsController : ControllerBase
             AuthorId = input.AuthorId,
             IsPublished = true,
             CreatedAt = DateTime.Now,
-            ThumbnailUrl = thumbnailUrl // Lưu link ảnh vừa tạo
+            ThumbnailUrl = thumbnailUrl 
         };
 
         _context.NewsPosts.Add(post);
@@ -87,9 +81,41 @@ public class NewsPostsController : ControllerBase
     }
 
     [HttpPut("{id}")]
-    public async Task<IActionResult> Update(int id, NewsPost post)
+    public async Task<IActionResult> Update(int id, [FromForm] NewsPostCreateDto input)
     {
-        if (id != post.Id) return BadRequest();
+        var post = await _context.NewsPosts.FindAsync(id);
+        if (post == null) return NotFound();
+
+        // Cập nhật text
+        post.Title = input.Title;
+        post.Category = input.Category;
+        post.Summary = input.Summary;
+        post.Content = input.Content;
+        post.Slug = input.Slug;
+
+        // Nếu có chọn ảnh mới thì cập nhật ảnh
+        if (input.ThumbnailFile != null && input.ThumbnailFile.Length > 0)
+        {
+            var ext = Path.GetExtension(input.ThumbnailFile.FileName).ToLower();
+            
+            var webRootPath = _env.WebRootPath;
+            if (string.IsNullOrWhiteSpace(webRootPath))
+            {
+                webRootPath = Path.Combine(_env.ContentRootPath, "wwwroot");
+            }
+            
+            var folder = Path.Combine(webRootPath, "images", "news");
+            Directory.CreateDirectory(folder); 
+            
+            var fileName = $"news_{DateTime.Now.Ticks}{ext}";
+            var path = Path.Combine(folder, fileName);
+            
+            using var stream = System.IO.File.Create(path);
+            await input.ThumbnailFile.CopyToAsync(stream);
+            
+            post.ThumbnailUrl = $"/images/news/{fileName}";
+        }
+
         _context.Entry(post).State = EntityState.Modified;
         await _context.SaveChangesAsync();
         return Ok(post);
@@ -106,7 +132,6 @@ public class NewsPostsController : ControllerBase
     }
 }
 
-// Lớp DTO trung gian để hứng dữ liệu từ Angular gửi lên
 public class NewsPostCreateDto
 {
     public string Title { get; set; } = string.Empty;
@@ -115,7 +140,5 @@ public class NewsPostCreateDto
     public string Content { get; set; } = string.Empty;
     public string Slug { get; set; } = string.Empty;
     public int AuthorId { get; set; }
-    
-    // IFormFile dùng để hứng file vật lý (khớp với tên formData.append('thumbnailFile', ...) bên Angular)
     public IFormFile? ThumbnailFile { get; set; } 
 }

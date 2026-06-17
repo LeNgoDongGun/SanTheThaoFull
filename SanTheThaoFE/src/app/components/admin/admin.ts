@@ -34,22 +34,18 @@ export class AdminComponent implements OnInit {
   news: any[] = [];
   sportTypes: any[] = [];
 
-  // STATE SÂN
   newCourt: any = { sportTypeId: '', name: '', pricePerHour: 0, description: '' };
   selectedCourtImage: File | null = null;
 
-  // STATE TIN TỨC
-  newNews: any = { title: '', category: 'Bóng đá', summary: '', content: '' };
-  selectedNewsImage: File | null = null;
-
-  // BỘ LỌC ĐƠN ĐẶT
   bookingStatusFilter: number | null = null;
 
-  // TÍNH NĂNG MỚI: STATE NGƯỜI DÙNG
   isEditingUser = false;
   userForm: any = { fullName: '', email: '', phoneNumber: '', password: '', role: 'Customer', isActive: true };
 
-  // THỐNG KÊ (GETTERS)
+  isEditingNews = false;
+  newsForm: any = { id: 0, title: '', category: 'Bóng đá', summary: '', content: '' };
+  selectedNewsImage: File | null = null;
+
   get pendingBookings() { return this.bookings.filter(b => b.status === 0).length; }
   get totalRevenue() { return this.bookings.filter(b => b.status === 1).reduce((s, b) => s + b.totalPrice, 0); }
   get filteredBookings() {
@@ -84,9 +80,6 @@ export class AdminComponent implements OnInit {
     this.http.get<any[]>(`${this.apiUrl}/users`).subscribe(res => this.users = Array.isArray(res) ? res : (res as any).data || []);
   }
 
-  // ==========================================
-  // LOGIC SÂN
-  // ==========================================
   onCourtImageSelected(event: any) { this.selectedCourtImage = event.target.files[0]; }
 
   addCourt() {
@@ -113,9 +106,6 @@ export class AdminComponent implements OnInit {
     this.courtService.update(court.id, court).subscribe();
   }
 
-  // ==========================================
-  // LOGIC ĐƠN ĐẶT
-  // ==========================================
   setBookingFilter(status: number | null) { this.bookingStatusFilter = status; }
   confirmBooking(b: any) { b.status = 1; this.bookingService.update(b.id, b).subscribe(() => this.cdr.detectChanges()); }
   cancelBooking(b: any) {
@@ -124,12 +114,8 @@ export class AdminComponent implements OnInit {
     this.bookingService.update(b.id, b).subscribe(() => this.cdr.detectChanges());
   }
 
-  // ==========================================
-  // TÍNH NĂNG MỚI: LOGIC NGƯỜI DÙNG
-  // ==========================================
   saveUser() {
     if (this.isEditingUser) {
-      // Gọi API Update (Put)
       this.http.put(`${this.apiUrl}/users/${this.userForm.id}`, this.userForm).subscribe({
         next: () => {
           alert('Cập nhật tài khoản thành công!');
@@ -139,7 +125,6 @@ export class AdminComponent implements OnInit {
         error: (err) => alert('Lỗi cập nhật: ' + (err.error?.title || err.message))
       });
     } else {
-      // Gọi API Đăng ký để thêm người mới
       this.auth.register(this.userForm).subscribe({
         next: () => {
           alert('Thêm người dùng thành công!');
@@ -153,7 +138,7 @@ export class AdminComponent implements OnInit {
 
   editUser(user: any) {
     this.isEditingUser = true;
-    this.userForm = { ...user }; // Copy dữ liệu lên form
+    this.userForm = { ...user };
   }
 
   cancelEditUser() {
@@ -171,61 +156,74 @@ export class AdminComponent implements OnInit {
     this.http.delete(`${this.apiUrl}/users/${user.id}`).subscribe(() => this.loadUsers());
   }
 
-  // ==========================================
-  // ĐÃ FIX: LOGIC TIN TỨC 
-  // ==========================================
   onNewsImageSelected(event: any) { this.selectedNewsImage = event.target.files[0]; }
 
-  addNews() {
-    // 1. Validate bắt buộc
-    if (!this.newNews.title || !this.newNews.content || !this.newNews.summary) {
+  editNews(post: any) {
+    this.isEditingNews = true;
+    this.newsForm = { ...post }; 
+    this.selectedNewsImage = null; 
+    window.scrollTo({ top: 0, behavior: 'smooth' }); 
+  }
+
+  cancelEditNews() {
+    this.isEditingNews = false;
+    this.newsForm = { id: 0, title: '', category: 'Bóng đá', summary: '', content: '' };
+    this.selectedNewsImage = null;
+    const fileInput = document.getElementById('newsFileInput') as HTMLInputElement;
+    if (fileInput) fileInput.value = ''; 
+  }
+
+  saveNews() {
+    if (!this.newsForm.title || !this.newsForm.content || !this.newsForm.summary) {
       alert('Vui lòng nhập đầy đủ Tiêu đề, Tóm tắt và Nội dung!');
       return;
     }
 
-    // 2. Tự động tạo Slug chuẩn từ Tiêu đề
-    const slug = this.newNews.title.toLowerCase()
-      .normalize('NFD').replace(/[\u0300-\u036f]/g, '') // Xóa dấu tiếng Việt
+    const slug = this.newsForm.title.toLowerCase()
+      .normalize('NFD').replace(/[\u0300-\u036f]/g, '') 
       .replace(/đ/g, 'd').replace(/Đ/g, 'D')
       .replace(/ /g, '-')
       .replace(/[^\w-]+/g, '');
 
-    // 3. Đóng gói dữ liệu dạng FormData (multipart/form-data)
     const formData = new FormData();
-    formData.append('title', this.newNews.title);
-    formData.append('category', this.newNews.category);
-    formData.append('summary', this.newNews.summary);
-    formData.append('content', this.newNews.content);
+    formData.append('title', this.newsForm.title);
+    formData.append('category', this.newsForm.category);
+    formData.append('summary', this.newsForm.summary);
+    formData.append('content', this.newsForm.content);
     formData.append('slug', slug);
     
-    // Gửi ID tác giả (ép sang string)
     const authorId = this.auth.getUser()?.id || 1; 
     formData.append('authorId', authorId.toString());
 
-    // Đính kèm File ảnh (Quan trọng: Tên 'thumbnailFile' phải khớp với DTO bên C#)
     if (this.selectedNewsImage) {
       formData.append('thumbnailFile', this.selectedNewsImage);
     }
 
-    // 4. Gửi lên API
-    this.http.post(`${this.apiUrl}/newsposts`, formData).subscribe({
-      next: () => {
-        alert('Đăng bài thành công!');
-        // Reset form
-        this.newNews = { title: '', category: 'Bóng đá', summary: '', content: '' };
-        this.selectedNewsImage = null;
-        
-        // Reset luôn thẻ <input type="file"> trên giao diện (nếu cần)
-        const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement;
-        if (fileInput) fileInput.value = '';
-
-        this.loadData();
-      },
-      error: (err) => {
-        console.error("Lỗi đăng bài:", err);
-        alert('Lỗi đăng bài: ' + (err.error?.title || err.message || 'Lỗi hệ thống'));
-      }
-    });
+    if (this.isEditingNews) {
+      this.http.put(`${this.apiUrl}/newsposts/${this.newsForm.id}`, formData).subscribe({
+        next: () => {
+          alert('Cập nhật bài viết thành công!');
+          this.cancelEditNews();
+          this.loadData();
+        },
+        error: (err) => {
+          console.error("Lỗi cập nhật:", err);
+          alert('Lỗi cập nhật: ' + (err.error?.title || err.message));
+        }
+      });
+    } else {
+      this.http.post(`${this.apiUrl}/newsposts`, formData).subscribe({
+        next: () => {
+          alert('Đăng bài thành công!');
+          this.cancelEditNews();
+          this.loadData();
+        },
+        error: (err) => {
+          console.error("Lỗi đăng bài:", err);
+          alert('Lỗi đăng bài: ' + (err.error?.title || err.message));
+        }
+      });
+    }
   }
 
   toggleNews(post: any) {
@@ -238,9 +236,6 @@ export class AdminComponent implements OnInit {
     this.http.delete(`${this.apiUrl}/newsposts/${post.id}`).subscribe(() => this.loadData());
   }
 
-  // ==========================================
-  // UI HELPERS
-  // ==========================================
   statusLabel(s: number) { return ['⏳ Chờ xác nhận', '✅ Đã xác nhận', '❌ Đã hủy'][s] || '?'; }
   statusColor(s: number) {
     return [

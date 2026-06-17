@@ -43,25 +43,32 @@ builder.Services.AddAuthentication(options =>
 .AddCookie()
 .AddGoogle(options =>
 {
-    // Đọc thông tin Credentials từ file appsettings.json
+    // 1. Đọc thông tin Credentials từ file appsettings.json
     options.ClientId = builder.Configuration["Authentication:Google:ClientId"] ?? "";
     options.ClientSecret = builder.Configuration["Authentication:Google:ClientSecret"] ?? "";
     
-    // Endpoint mặc định xử lý callback từ phía Google Auth Server
+    // 2. Endpoint mặc định xử lý callback từ phía Google Auth Server
     options.CallbackPath = "/signin-google";
 })
 .AddFacebook(options =>
 {
+    // 1. Đọc thông tin định danh và mật mã của Facebook
     options.AppId = builder.Configuration["Authentication:Facebook:AppId"] ?? "";
     options.AppSecret = builder.Configuration["Authentication:Facebook:AppSecret"] ?? "";
+    
+    // 2. Endpoint ngầm xử lý callback từ Facebook
     options.CallbackPath = "/signin-facebook";
 })
 .AddGitHub(options =>
 {
+    // 1. Đọc thông tin định danh và mật mã của GitHub
     options.ClientId = builder.Configuration["Authentication:GitHub:ClientId"] ?? "";
     options.ClientSecret = builder.Configuration["Authentication:GitHub:ClientSecret"] ?? "";
+    
+    // 2. Endpoint ngầm xử lý callback từ GitHub
     options.CallbackPath = "/signin-github";
-    // GitHub yêu cầu quyền truy cập email cá nhân
+    
+    // 3. GitHub yêu cầu quyền truy cập email cá nhân
     options.Scope.Add("user:email"); 
 });
 

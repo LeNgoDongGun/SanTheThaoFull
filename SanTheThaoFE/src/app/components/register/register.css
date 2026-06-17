@@ -1,0 +1,126 @@
+.register-wrapper {
+  min-height: 80vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #f8fafc;
+  padding: 24px;
+}
+
+.register-card {
+  background: white;
+  border-radius: 16px;
+  padding: 36px;
+  width: 100%;
+  max-width: 460px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+}
+
+.register-header {
+  text-align: center;
+  margin-bottom: 28px;
+}
+
+.header-icon {
+  font-size: 3rem;
+}
+
+.register-header h2 {
+  margin: 8px 0 4px;
+  font-weight: 700;
+  color: #1e293b;
+}
+
+.register-header p {
+  color: #64748b;
+  font-size: 0.875rem;
+}
+
+/* Base style cho các ô thông báo alert */
+.alert-message {
+  border-radius: 8px;
+  padding: 12px;
+  margin-bottom: 16px;
+  font-size: 0.875rem;
+}
+
+.alert-error {
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  color: #dc2626;
+}
+
+.alert-success {
+  background: #f0fdf4;
+  border: 1px solid #bbf7d0;
+  color: #16a34a;
+}
+
+/* Gom nhóm các ô input lại thành class chung */
+.form-group {
+  margin-bottom: 14px;
+}
+
+.form-group label {
+  display: block;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #374151;
+  margin-bottom: 6px;
+}
+
+.form-group input {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  box-sizing: border-box;
+  outline: none;
+  transition: border-color 0.2s ease;
+}
+
+.form-group input:focus {
+  border-color: #3b82f6;
+}
+
+/* Nút bấm Submit */
+.btn-submit {
+  width: 100%;
+  background: #3b82f6;
+  color: white;
+  border: none;
+  padding: 12px;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.btn-submit:hover:not([disabled]) {
+  background: #2563eb;
+}
+
+.btn-submit:disabled {
+  background: #94a3b8;
+  cursor: not-allowed;
+}
+
+/* Dòng chữ chuyển hướng đăng nhập */
+.redirect-text {
+  text-align: center;
+  margin-top: 20px;
+  font-size: 0.875rem;
+  color: #64748b;
+}
+
+.redirect-text a {
+  color: #3b82f6;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.redirect-text a:hover {
+  text-decoration: underline;
+}

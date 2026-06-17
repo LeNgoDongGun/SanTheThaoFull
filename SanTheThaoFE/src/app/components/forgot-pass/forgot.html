@@ -1,0 +1,52 @@
+<div class="forgot-box">
+  <h3>Quên Mật Khẩu (Xác thực nhanh)</h3>
+
+  <div class="field">
+    <label>Email tài khoản:</label>
+    <input type="email" 
+           [(ngModel)]="email" 
+           placeholder="example@gmail.com" 
+           required 
+           email
+           #emailforgot="ngModel">
+  </div>
+
+  @if (emailforgot.touched && emailforgot.invalid) {
+    <small class="error-text">
+      @if (emailforgot.errors?.['required']) { Vui lòng nhập Email. } 
+      @else if (emailforgot.errors?.['email']) { Định dạng Email không hợp lệ. }
+    </small>
+  }
+
+  <button *ngIf="!isEmailAvail" 
+          class="btn-send" 
+          (click)="checkEmailExists()" 
+          [disabled]="isLoading || (emailforgot.invalid && emailforgot.touched)">
+    {{ isLoading ? 'Đang kiểm tra...' : 'Kiểm tra Email' }}
+  </button>
+
+  <div *ngIf="isEmailAvail">
+    <hr>
+    <div class="field">
+      <label>Mật khẩu mới:</label>
+      <input type="password" 
+            [(ngModel)]="newPassword" 
+            placeholder="••••••••" 
+            minlength="6"
+            #passwordModel="ngModel">
+    </div>
+
+    @if ((passwordModel.touched) && passwordModel.invalid) {
+        <small class="error-text">
+          @if (passwordModel.errors?.['required']) { Vui lòng nhập mật khẩu. }
+          @else if (passwordModel.errors?.['minlength']) { Mật khẩu phải có ít nhất 6 ký tự. }
+        </small>
+    }
+
+    <button class="btn-submit" (click)="changePasswordDirect()" [disabled]="isLoading || !newPassword.trim()">
+      {{ isLoading ? 'Đang cập nhật...' : 'Xác nhận đổi mật khẩu' }}
+    </button>
+  </div>
+
+  <p *ngIf="message" [style.color]="isError ? 'red' : 'green'" class="msg">{{ message }}</p>
+</div>

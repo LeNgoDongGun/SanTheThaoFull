@@ -1,5 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
+import { Observable } from 'rxjs';
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
@@ -42,5 +43,19 @@ export class AuthService {
     // Chuyển thành kiểu void vì dùng window.location.href sẽ làm reload/chuyển toàn bộ trang
   loginSocial(provider: 'Google' | 'Facebook' | 'GitHub'): void {
     window.location.href = `${this.api}/login/${provider}`;
+  }
+
+
+  // Thêm <ApiResponse> vào đây để báo cho Angular biết cấu trúc trả về của API .NET
+  // Đổi kiểu trả về thành Observable<boolean> nè "cu"
+  checkEmail(email: string): Observable<boolean> {
+    return this.http.post<boolean>(`${this.api}/check-email`, { email });
+  }
+
+  resetPasswordDirect(email: string, passwordNew: string): Observable<boolean> {
+    return this.http.post<boolean>(`${this.api}/reset-password-direct`, { 
+      email: email, 
+      newPassword: passwordNew 
+    });
   }
 }

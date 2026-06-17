@@ -49,3 +49,20 @@ public class ApiResponse<T>
     public static ApiResponse<T> Fail(string message)
         => new() { Success = false, Message = message };
 }
+
+
+
+
+
+
+
+    public class ForgotEmailDto
+    {
+        public string Email { get; set; } = string.Empty;
+    }
+
+    public class ResetPasswordDirectDto
+    {
+        public string Email { get; set; } = string.Empty;
+        public string NewPassword { get; set; } = string.Empty;
+    }

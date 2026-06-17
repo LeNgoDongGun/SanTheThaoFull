@@ -10,6 +10,7 @@ import { MyBookingsComponent } from './components/my-bookings/my-bookings';
 import { NewsComponent } from './components/news/news';
 import { NewsDetailComponent } from './components/news-detail/news-detail';
 import { AdminComponent } from './components/admin/admin';
+import { ForgotPasswordComponent } from './components/forgot-pass/forgot';
 
 export const routes: Routes = [
     { path: '', component: HomeComponent },
@@ -24,5 +25,6 @@ export const routes: Routes = [
     { path: 'news', component: NewsComponent },
     { path: 'news/:id', component: NewsDetailComponent },
     { path: 'admin', component: AdminComponent },
+    { path: 'forgot', component: ForgotPasswordComponent},
     { path: '**', redirectTo: '' }
 ];

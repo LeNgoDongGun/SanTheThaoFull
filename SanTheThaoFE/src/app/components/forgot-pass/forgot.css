@@ -1,0 +1,11 @@
+
+  .forgot-box { max-width: 320px; margin: 30px auto; padding: 20px; border: 1px solid #ccc; border-radius: 6px; font-family: Arial; }
+  .forgot-box h3 { text-align: center; margin-top: 0; }
+  .field { margin-bottom: 12px; }
+  .field label { display: block; font-size: 13px; font-weight: bold; margin-bottom: 4px; }
+  .field input { width: 100%; padding: 8px; box-sizing: border-box; border: 1px solid #ccc; border-radius: 4px; }
+  button { width: 100%; padding: 10px; margin: 5px 0; border: none; border-radius: 4px; font-weight: bold; cursor: pointer; }
+  .btn-send { background: #007bff; color: white; }
+  .btn-submit { background: #28a745; color: white; }
+  hr { border: 0; border-top: 1px dashed #ccc; margin: 15px 0; }
+  .msg { text-align: center; font-size: 13px; font-weight: bold; margin: 10px 0 0 0; }

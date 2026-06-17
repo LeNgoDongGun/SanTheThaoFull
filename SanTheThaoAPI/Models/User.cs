@@ -14,14 +14,4 @@ public class User
     public DateTime CreatedAt { get; set; } = DateTime.Now; // Tự lấy giờ hiện tại
     public string? AvatarUrl { get; set; }
 
-    // THÊM CONSTRUCTOR NÀY ĐỂ XỬ LÝ RÁC CHO CONTROLLER
-    public User() { }
-    public User(IEnumerable<Claim> claims)
-    {
-        FullName = claims.FirstOrDefault(c => c.Type == ClaimTypes.Name)?.Value ?? "Social User";
-        
-        // Gộp logic lấy email của Google/Facebook, nếu hụt thì lấy username GitHub chế email luôn
-        Email = claims.FirstOrDefault(c => c.Type == ClaimTypes.Email)?.Value 
-                ?? (claims.FirstOrDefault(c => c.Type == "urn:github:login")?.Value is string git ? $"{git}@github.local" : "");
-    }
 }

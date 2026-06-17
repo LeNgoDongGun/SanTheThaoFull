@@ -1,0 +1,46 @@
+<div class="register-wrapper">
+  <div class="register-card">
+
+    <div class="register-header">
+      <h2>Tạo tài khoản</h2>
+    </div>
+
+    <div *ngIf="errorMsg" class="alert-message alert-error">
+      {{ errorMsg }}
+    </div>
+
+    <div *ngIf="successMsg" class="alert-message alert-success">
+      {{ successMsg }}
+    </div>
+
+    <div class="form-group">
+      <label>Họ tên</label>
+      <input [(ngModel)]="form.fullName" placeholder="Nguyễn Văn A">
+    </div>
+
+    <div class="form-group">
+      <label>Email</label>
+      <input type="email" [(ngModel)]="form.email" placeholder="email@example.com">
+    </div>
+
+    <div class="form-group">
+      <label>Số điện thoại</label>
+      <input [(ngModel)]="form.phoneNumber" placeholder="0901234567">
+    </div>
+
+    <div class="form-group">
+      <label>Mật khẩu</label>
+      <input type="password" [(ngModel)]="form.password" placeholder="••••••••">
+    </div>
+
+    <button (click)="submit()" [disabled]="loading" class="btn-submit">
+      {{ loading ? 'Đang xử lý...' : 'Đăng ký' }}
+    </button>
+
+    <p class="redirect-text">
+      Đã có tài khoản?
+      <a routerLink="/login">Đăng nhập</a>
+    </p>
+
+  </div>
+</div>

@@ -38,8 +38,8 @@ builder.Services.AddCors(options =>
 // 4. CẤU HÌNH AUTHENTICATION CHO GOOGLE (THÊM MỚI TẠI ĐÂY)
 builder.Services.AddAuthentication(options =>
 {
-    options.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
-    options.DefaultChallengeScheme = GoogleDefaults.AuthenticationScheme;
+    // Tự động đọc và giải mã Cookie ở trình duyệt để nhận diện User trên mọi API
+    options.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme; // CookieAuthenticationDefaults.AuthenticationScheme cũng chính là key mà middle lừu vô cookies
 })
 .AddCookie()
 .AddGoogle(options =>
@@ -69,7 +69,7 @@ builder.Services.AddAuthentication(options =>
     // 2. Endpoint ngầm xử lý callback từ GitHub
     options.CallbackPath = "/signin-github";
     
-    // 3. GitHub yêu cầu quyền truy cập email cá nhân
+    // 3. GitHub yêu cầu quyền middle phải xin được email cá nhân
     options.Scope.Add("user:email"); 
 });
 

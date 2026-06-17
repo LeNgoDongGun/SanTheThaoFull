@@ -62,7 +62,7 @@ public class AuthController(SanTheThaoContext context) : ControllerBase
             FullName = u.FullName ?? "",
             Role = u.Role ?? "Customer"
         };
-        return Ok(ApiResponse<object>.Ok(userFlat, "Đăng ký thành công"));
+        return Ok(ApiResponse<object>.Ok(userFlat, "Đăng ký thành công")); // gửi về cho service của fe
     }
 
 
@@ -108,7 +108,7 @@ public class AuthController(SanTheThaoContext context) : ControllerBase
                 $"&id={u.Id}" +
                 $"&email={u.Email}" +
                 $"&fullName={Uri.EscapeDataString(u.FullName)}" +
-                $"&role={u.Role}");
+                $"&role={u.Role}");  // gửi về cho service của fe 
     }
 
    //phương thức hỗ trợ bóc tách ra lấy email và username

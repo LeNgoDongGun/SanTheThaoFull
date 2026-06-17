@@ -26,15 +26,7 @@ public class AuthResponseDto
     // --- BẮT BUỘC THÊM CỤM NÀY ĐỂ FIX TRIỆT ĐỂ LỖI CS1729 ---
     public AuthResponseDto() { }
     
-    // Hàm khởi tạo nhận vào model User để tự động bốc tách dữ liệu gọn gàng
-    public AuthResponseDto(User u)
-    {
-        Id = u.Id;
-        FullName = u.FullName ?? "";
-        Email = u.Email ?? "";
-        Role = u.Role ?? "Customer";
-    }
-    // --------------------------------------------------------
+
 }
 
 public class ApiResponse<T>

@@ -18,18 +18,37 @@ export class AuthService {
 
 
 
+
+  // =========================================================
+    // QUẢN LÝ PHIÊN ĐĂNG NHẬP BẰNG mã hóa base64
+    // =========================================================
+
   saveUser(user: any) {
-    localStorage.setItem('user', JSON.stringify(user));
+    // Biến object thành chuỗi -> Mã hóa Base64 -> Đảo ngược chuỗi -> Ném vào localStorage. gửi đi với key user_token
+    localStorage.setItem('user_token', btoa(encodeURIComponent(JSON.stringify(user))).split('').reverse().join(''));
   }
 
   getUser(): any {
-    const u = localStorage.getItem('user');
-    return u ? JSON.parse(u) : null;
+    const token = localStorage.getItem('user_token'); // Lấy chuỗi mã hóa từ trình duyệt
+    if (!token) return null; // Nếu không có token thì coi như chưa đăng nhập
+    try {
+      // Đảo ngược chuỗi về lại dạng gốc -> Giải mã Base64 -> Dựng lại thành Object cho Angular xài
+      const originalBase64 = token.split('').reverse().join('');
+      return JSON.parse(decodeURIComponent(atob(originalBase64)));
+    } 
+    catch (e) {
+      // Nếu chuỗi bị sửa khi dịch ra bị sai cấu trúc Object thì tự động logout
+      this.logout();
+      return null;
+    }
   }
 
   logout() {
-    localStorage.removeItem('user');
+    //  xóa đúng key 'user_token' =>đăng xuất
+    localStorage.removeItem('user_token');
   }
+
+  // =========================================================
 
   isLoggedIn() {
     return !!this.getUser();

@@ -1,5 +1,5 @@
 // register.ts
-import { Component, inject } from '@angular/core';
+import { Component, inject, ChangeDetectorRef } from '@angular/core'; // Thêm ChangeDetectorRef vào đây
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
@@ -9,13 +9,13 @@ import { AuthService } from '../../services/auth';
   selector: 'app-register',
   standalone: true,
   imports: [CommonModule, FormsModule, RouterLink],
-  templateUrl: './register.html', // Trỏ về file HTML riêng biệt
+  templateUrl: './register.html',
   styleUrls: ['./register.css']
 })
 export class RegisterComponent {
-  // Thay constructor bằng inject cho "văn minh"
   private auth = inject(AuthService);
   private router = inject(Router);
+  private cdr = inject(ChangeDetectorRef); // Inject ChangeDetectorRef chuẩn chỉnh theo phong cách mới
 
   form = { fullName: '', email: '', phoneNumber: '', password: '' };
   loading = false;
@@ -25,20 +25,24 @@ export class RegisterComponent {
   submit() {
     if (!this.form.fullName || !this.form.email || !this.form.password) {
       this.errorMsg = 'Vui lòng điền đầy đủ thông tin.';
+      this.cdr.detectChanges(); // Ép cập nhật lỗi validation local lên UI
       return;
     }
     this.loading = true;
     this.errorMsg = '';
+    this.successMsg = ''; // Reset lại thông báo thành công cũ nếu có
+    this.cdr.detectChanges(); // Cập nhật trạng thái loading lên UI
     
     this.auth.register(this.form).subscribe({
       next: () => {
         this.loading = false;
-        this.successMsg = '✅ Đăng ký thành công! Đang chuyển hướng...';
-        setTimeout(() => this.router.navigate(['/login']), 1500);
+        this.successMsg = '✅ Đăng ký tài khoản mới thành công!'; 
+        this.cdr.detectChanges(); // Ép render thông báo thành công xanh lá cây lên màn hình ngay lập tức
       },
       error: (err: any) => {
         this.loading = false;
         this.errorMsg = err?.error?.message || 'Đăng ký thất bại, vui lòng thử lại.';
+        this.cdr.detectChanges(); // Ép render thông báo lỗi từ server trả về
       }
     });
   }

@@ -42,16 +42,23 @@ export class LoginComponent implements OnInit {
   }
 
   submit() {
+
     this.errorMsg = '';
     
     this.auth.login({ email: this.email.trim(), password: this.password }).subscribe({
       next: (res: any) => {
-        this.auth.saveUser(res.data || res);
-        this.router.navigate(['/']);
+        // res.data lúc này đã là { id, email, fullName, role } phẳng đét
+        if (res && res.data) {
+          this.auth.saveUser(res.data); //lưu vào local storage
+          this.router.navigate(['/']);
+        } else {
+          this.errorMsg = 'Dữ liệu phản hồi từ server không hợp lệ.';
+        }
       },
-      error: () => { 
-        this.errorMsg = 'Email hoặc mật khẩu không đúng.'; 
-        this.cdr.detectChanges(); // Vẫn giữ lại để ép cập nhật thông báo lỗi lên UI ngay lập tức
+      error: (err) => { 
+        // Lấy message lỗi từ Backend nếu có, không thì dùng câu mặc định
+        this.errorMsg = err?.error?.message || 'Email hoặc mật khẩu không đúng.'; 
+        this.cdr.detectChanges(); 
       }
     });
   }

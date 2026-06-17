@@ -11,24 +11,37 @@ using BC = BCrypt.Net.BCrypt;
 namespace SanTheThaoAPI.Controllers;
 
 [ApiController]
-[Route("api/[controller]")]
+[Route("api/[controller]")] // Nghĩa là: api/Auth (vì sao là Auth vì controller này lấy từ tên AuthController mà quy tắc dat tên là tên + Controller)
 public class AuthController(SanTheThaoContext context) : ControllerBase
 {
-    // Không cần dùng PasswordHasher<User> nữa, BCrypt sử dụng các hàm static trực tiếp.
+    // BCrypt sử dụng các hàm static trực tiếp.
 
     [HttpPost("login")]
     public async Task<IActionResult> Login(LoginDto dto)
     {
+        // Tìm user trong DB theo Email và bắt buộc tài khoản đó phải đang hoạt động (IsActive == true)
         var u = await context.Users.FirstOrDefaultAsync(x => x.Email == dto.Email && x.IsActive);
         
-        // Thay thế bằng BC.Verify để kiểm tra mật khẩu
+        // 2. KIỂM TRA BẢO MẬT: Thất bại nếu thuộc 1 trong 3 trường hợp sau:
+        //    - Không tìm thấy user (u == null)
+        //    - Tài khoản không có mật khẩu (ví dụ tài khoản chỉ dùng đăng nhập Social)
+        //    - BC.Verify: Giải băm và so sánh mật khẩu người dùng nhập với PasswordHash trong DB không khớp
         if (u == null || string.IsNullOrEmpty(u.PasswordHash) || !BC.Verify(dto.Password, u.PasswordHash))
+            // Trả về mã lỗi 401 Unauthorized kèm chuỗi JSON báo lỗi ()
             return Unauthorized(ApiResponse<string>.Fail("Email hoặc mật khẩu không đúng"));
 
-        return Ok(ApiResponse<AuthResponseDto>.Ok(new(u), "Đăng nhập thành công"));
+        // Khởi tạo đối tượng đại diện (Object) chứa thông tin tài khoản rút gọn để trả về cho Angular lưu vào LocalStorage.
+        var userFlat = new {
+            Id = u.Id,
+            Email = u.Email,
+            FullName = u.FullName,
+            Role = u.Role
+        };
+        //Trả về trạng thái 200 OK kèm theo cục data phẳng để Angular tiến hành mã hóa Base64 lưu vào LocalStorage
+        return Ok(ApiResponse<object>.Ok(userFlat, "Đăng nhập thành công"));
     }
 
-    [HttpPost("register")]
+    [HttpPost("register")] 
     public async Task<IActionResult> Register(RegisterDto dto)
     {
         if (await context.Users.AnyAsync(x => x.Email == dto.Email)) 
@@ -41,14 +54,22 @@ public class AuthController(SanTheThaoContext context) : ControllerBase
 
         context.Users.Add(u);
         await context.SaveChangesAsync();
-        return Ok(ApiResponse<AuthResponseDto>.Ok(new(u), "Đăng ký thành công"));
+
+        // Khởi tạo đối tượng đại diện (Object) chứa thông tin tài khoản rút gọn để trả về cho Angular lưu vào LocalStorage.
+        var userFlat = new {
+            Id = u.Id,
+            Email = u.Email ?? "",
+            FullName = u.FullName ?? "",
+            Role = u.Role ?? "Customer"
+        };
+        return Ok(ApiResponse<object>.Ok(userFlat, "Đăng ký thành công"));
     }
 
 
 
     // 
     [HttpGet("login/{provider}")]
-    public IActionResult LoginSocial(string provider) 
+    public IActionResult LoginSocial(string provider) // provider là goolge hoặc git hoặc facebook được gửi từ fe
     // Yêu cầu trình duyệt chuyển hướng sang bên thứ 3 
     // và cấu hình để Middleware tự động gọi hàm SocialCallback sau khi đã hứng dữ liệu 
     // và đóng gói vào Cookie thành công
@@ -56,7 +77,7 @@ public class AuthController(SanTheThaoContext context) : ControllerBase
 
 
 
-    [HttpGet("callback")] // cấu hình url
+    [HttpGet("callback")] // cấu hình URL sẽ là: api/Auth/callback
     public async Task<IActionResult> SocialCallback()
     {
         // Yêu cầu hệ thống giải mã Cookie tạm thời do Middleware vừa đóng gói để trích xuất thông tin định danh (Email, Họ tên) ra xử lý nghiệp vụ
@@ -64,7 +85,7 @@ public class AuthController(SanTheThaoContext context) : ControllerBase
         var res = await HttpContext.AuthenticateAsync(CookieAuthenticationDefaults.AuthenticationScheme);
         if (!res.Succeeded || res.Principal == null) return BadRequest("Đăng nhập MXH thất bại.");
 
-        // Thay vì new User(claims), ta gọi hàm private bên dưới
+        // Thay vì new User(claims), ta gọi hàm private bên dưới đêt bóc tách lấy email và username
         var socialUser = MapClaimsToUser(res.Principal.Claims);
         if (string.IsNullOrEmpty(socialUser.Email)) return BadRequest("Không lấy được Email.");
 
@@ -80,8 +101,14 @@ public class AuthController(SanTheThaoContext context) : ControllerBase
         else if (!u.IsActive) return Unauthorized("Tài khoản bị khóa.");
 
         await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
-        
-        return Redirect($"http://localhost:4200/login?socialLogin=true&id={u.Id}&email={u.Email}&fullName={Uri.EscapeDataString(u.FullName)}&role={u.Role}");
+
+        // 
+        return Redirect("http://localhost:4200/login?" +
+                "socialLogin=true" +
+                $"&id={u.Id}" +
+                $"&email={u.Email}" +
+                $"&fullName={Uri.EscapeDataString(u.FullName)}" +
+                $"&role={u.Role}");
     }
 
    //phương thức hỗ trợ bóc tách ra lấy email và username
@@ -106,8 +133,6 @@ public class AuthController(SanTheThaoContext context) : ControllerBase
         };
 
     }
-
-
 
 
 
